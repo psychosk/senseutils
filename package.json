@@ -11,6 +11,8 @@
     "forms": "^1.1.4",
     "forms-generator": "^1.0.4",
     "jade": "*",
-    "request": "^2.67.0"
+    "prompt": "^0.2.14",
+    "request": "^2.67.0",
+    "ws": "^0.8.1"
   }
 }
