@@ -1,0 +1,16 @@
+{
+  "name": "senseMobileApp",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "nodemon mobileWebServer.js"
+  },
+  "dependencies": {
+    "express": "3.2.6",
+    "form-builder": "0.0.1",
+    "forms": "^1.1.4",
+    "forms-generator": "^1.0.4",
+    "jade": "*",
+    "request": "^2.67.0"
+  }
+}
