@@ -18,11 +18,18 @@ app.use(express.methodOverride());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
 
-// development only
-if ('development' == app.get('env'))
+var logdir = "/var/tmp/hubEngine.log"
+
+var ip = "hub.smartsense.co.in:4000/";
+
+if (process.env.NODE_ENV === 'dev')
 {
+	console.log("Using dev environment!");
+	ip = "localhost:4000/";
 	app.use(express.errorHandler());
 }
+
+
 
 app.get('/', function(req, res)
 {
@@ -32,7 +39,7 @@ app.get('/', function(req, res)
 	var Form = require('form-builder').Form;
 
 	var myForm = Form.create({
-		action : 'http://localhost:4000/user/registerUser',
+		action : ip + "user/registerUser",
 		method : 'post'
 	}, {
 		user : {
@@ -69,7 +76,7 @@ app.post('/user/registerUser', function(req, res)
 {
 	var emailID = req.body.emailID;
 	var password = req.body.password;
-	var registerURL = "http://localhost:7320/user/registerUser/" + emailID + "/" + password;
+	var registerURL = ip + "user/registerUser/" + emailID + "/" + password;
 	request.post(registerURL, function(error, response, body)
 	{
 		if (!error && response.statusCode == 200)
@@ -81,9 +88,9 @@ app.post('/user/registerUser', function(req, res)
 			var data = "";
 			data += "<b>YOUR USERID IS:" + userID + "</b><br>";
 
-			var getDevicesUrl = "http://localhost:7320/user/alldevices/" + userID;
+			var getDevicesUrl = ip +"user/alldevices/" + userID;
 			var request2 = require('request');
-			request2.get("http://localhost:7320/user/alldevices/" + userID, function(error, response, body)
+			request2.get(ip+"/user/alldevices/" + userID, function(error, response, body)
 			{
 				var gateways = [];
 				var cameras = [];
@@ -126,7 +133,7 @@ app.post('/user/registerUser', function(req, res)
 
 				for (var i = 0; i < gateways.length; ++i)
 				{
-					data += "GatewayID:" + gateways[i] + "<a href=\"http://localhost:4000/configure/gateway/" + gateways[i] + "\">Configure</a><br>"
+					data += "GatewayID:" + gateways[i] + "<a href=\"" + ip +"configure/gateway/" + gateways[i] + "\">Configure</a><br>"
 				}
 
 				data += "<b>Your linked panic buttons:</b><br>";
@@ -135,30 +142,32 @@ app.post('/user/registerUser', function(req, res)
 				{
 					var deviceID = panicbuttons[i].deviceID;
 					var gatewayID = panicbuttons[i].gatewayID;
-					data += "DeviceID:" + deviceID + "<a href=\"http://localhost:4000/configure/panicbutton/" + gatewayID + "/" + deviceID + "\">Configure</a><br>"
+					data += "DeviceID:" + deviceID + "<a href=\"" + ip +"configure/panicbutton/" + gatewayID + "/" + deviceID + "\">Configure</a>  "
+					data += "<a href=\"" + ip +"info/panicbutton/" + gatewayID + "/" + deviceID + "\">Info</a><br>";
 				}
 
 				data += "<b>Your linked smart plugs:</b><br>";
 
 				for (var i = 0; i < smartplugs.length; ++i)
 				{
-					var deviceID = panicbuttons[i].deviceID;
-					var gatewayID = panicbuttons[i].gatewayID;
-					data += "DeviceID:" + deviceID + "<a href=\"http://localhost:4000/configure/smartplug/" + gatewayID + "/" + deviceID + "\">Configure</a><br>"
+					var deviceID = smartplugs[i].deviceID;
+					var gatewayID = smartplugs[i].gatewayID;
+					data += "DeviceID:" + deviceID + "<a href=\"" + ip +"configure/smartplug/" + gatewayID + "/" + deviceID + "\">Configure</a>  "
+					data += "<a href=\"" + ip + "info/smartplug/" + gatewayID + "/" + deviceID + "\">Info</a><br>";
 				}
 
 				data += "<b>Your linked cameras</b>:<br>";
 
 				for (var i = 0; i < cameras.length; ++i)
 				{
-					data += "CameraID:" + cameras[i] + "<a href=\"http://localhost:4000/configure/camera/" + cameras[i] + "\">Configure</a><br>"
+					data += "CameraID:" + cameras[i] + "<a href=\"" + ip + "configure/camera/" + cameras[i] + "\">Configure</a><br>"
 				}
 
 				data += "<b>Your linked trackers:</b><br>";
 
 				for (var i = 0; i < trackers.length; ++i)
 				{
-					data += "TrackerID:" + trackers[i] + "<a href=\"http://localhost:4000/configure/tracker/" + trackers[i] + "\">Configure</a><br>"
+					data += "TrackerID:" + trackers[i] + "<a href=\"" + ip +"/configure/tracker/" + trackers[i] + "\">Configure</a><br>"
 				}
 				res.send(data);
 
@@ -183,7 +192,7 @@ app.post('/configure/gateway/modifysettings/:gatewayID', function(req, res)
 	var password = req.body.password;
 
 	console.log("Setting gateway to %s,%s", ssid, password);
-	var settingsURL = "http://localhost:7320/gateway/settings/" + gatewayID;
+	var settingsURL = ip + "gateway/settings/" + gatewayID;
 	request.post({
 		url : settingsURL,
 		form : {
@@ -206,7 +215,7 @@ app.get('/configure/gateway/:gatewayID', function(req, res)
 	// gateway/settings/:gatewayID
 
 	var gatewayID = req.params.gatewayID;
-	var settingsURL = "http://localhost:7320/gateway/settings/" + gatewayID;
+	var settingsURL = ip + "gateway/settings/" + gatewayID;
 	request.get(settingsURL, function(error, response, body)
 	{
 		var data = "";
@@ -219,7 +228,7 @@ app.get('/configure/gateway/:gatewayID', function(req, res)
 			var Form = require('form-builder').Form;
 
 			var myForm = Form.create({
-				action : 'http://localhost:4000/configure/gateway/modifysettings/' + gatewayID,
+				action : ip + "configure/gateway/modifysettings/" + gatewayID,
 				method : 'post'
 			});
 
@@ -249,6 +258,52 @@ app.get('/configure/gateway/:gatewayID', function(req, res)
 });
 
 /**
+ * get the info from the server
+ */
+app.get('/info/panicbutton/:gatewayID/:deviceID', function(req, res)
+{
+
+	// gateway/settings/:gatewayID
+
+	var gatewayID = req.params.gatewayID;
+	var deviceID = req.params.deviceID;
+	var settingsURL = ip + "panicbutton/history/" + gatewayID + "/" + deviceID;
+	console.log("Going to %s", settingsURL);
+	request.get(settingsURL, function(error, response, body)
+	{
+		// console.log(body);
+		// console.log("Got response!");
+		var data = "<table>";
+		if (response.statusCode == 200)
+		{
+			var params = JSON.parse(response.body);
+			for (var i = 0; i < params.length; i++)
+			{
+				var row = params[i];
+				data += "<tr>";
+				var event = "";
+				if (params[i].event === 'PA')
+					event = "Panic button press";
+				else if (params[i].event === 'SU')
+					event = "IVR success";
+				else if (params[i].event === 'FL')
+					event = "IVR failure";
+				else if (params[i].event === 'FA')
+					event = "Fall";
+				else if (params[i].event === 'FS')
+					event = "Fall false alarm";
+				data += "<td>" + event + "</td>";
+				data += "<td>" + params[i].timeStamp + "</td>";
+				data += "<td>" + params[i].phoneNumber + "</td>";
+				data += "</tr>"
+			}
+		}
+		data += "</table>"
+		res.send(data);
+	});
+});
+
+/**
  * get the settings from the server
  */
 app.get('/configure/panicbutton/:gatewayID/:deviceID', function(req, res)
@@ -258,7 +313,7 @@ app.get('/configure/panicbutton/:gatewayID/:deviceID', function(req, res)
 
 	var gatewayID = req.params.gatewayID;
 	var deviceID = req.params.deviceID;
-	var settingsURL = "http://localhost:7320/panicbutton/settings/" + gatewayID + "/" + deviceID;
+	var settingsURL = ip + "panicbutton/settings/" + gatewayID + "/" + deviceID;
 	// console.log("Going to %s",settingsURL);
 	request.get(settingsURL, function(error, response, body)
 	{
@@ -285,7 +340,7 @@ app.get('/configure/panicbutton/:gatewayID/:deviceID', function(req, res)
 			var Form = require('form-builder').Form;
 
 			var myForm = Form.create({
-				action : 'http://localhost:4000/configure/panicbutton/settings/' + gatewayID + "/" + deviceID,
+				action : ip + "configure/panicbutton/settings/" + gatewayID + "/" + deviceID,
 				method : 'post'
 			});
 
@@ -335,7 +390,7 @@ app.post('/configure/panicbutton/settings/:gatewayID/:deviceID', function(req, r
 	var callTimeout = req.body.callTimeout;
 
 	// console.log("Setting gateway to %s,%s", ssid, password);
-	var settingsURL = "http://localhost:7320/panicbutton/settings/" + gatewayID +"/"+deviceID;
+	var settingsURL = ip + "panicbutton/settings/" + gatewayID + "/" + deviceID;
 	request.post({
 		url : settingsURL,
 		form : {
@@ -353,7 +408,7 @@ app.post('/configure/panicbutton/settings/:gatewayID/:deviceID', function(req, r
 			res.send(error);
 		else if (response.statusCode == 200)
 			res.send("Panic button configuration set successfully!");
-		else 
+		else
 			res.send(400);
 	});
 
