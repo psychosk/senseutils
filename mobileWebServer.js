@@ -21,11 +21,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 var logdir = "/var/tmp/hubEngine.log"
 
 var ip = "http://hub.smartsense.co.in:4000/";
+var hubEngineIP = "http://hub.smartsense.co.in:7320/";
 
 if (process.env.NODE_ENV === 'dev')
 {
 	console.log("Using dev environment!");
 	ip = "http://localhost:4000/";
+	hubEngineIP = "http://localhost:7320/";
 	app.use(express.errorHandler());
 }
 
@@ -76,7 +78,7 @@ app.post('/user/registerUser', function(req, res)
 {
 	var emailID = req.body.emailID;
 	var password = req.body.password;
-	var registerURL = ip + "user/registerUser/" + emailID + "/" + password;
+	var registerURL = hubEngineIP + "user/registerUser/" + emailID + "/" + password;
 	request.post(registerURL, function(error, response, body)
 	{
 		if (!error && response.statusCode == 200)
@@ -90,7 +92,7 @@ app.post('/user/registerUser', function(req, res)
 
 			var getDevicesUrl = ip +"user/alldevices/" + userID;
 			var request2 = require('request');
-			request2.get(ip+"/user/alldevices/" + userID, function(error, response, body)
+			request2.get(hubEngineIP+"/user/alldevices/" + userID, function(error, response, body)
 			{
 				var gateways = [];
 				var cameras = [];
@@ -192,7 +194,7 @@ app.post('/configure/gateway/modifysettings/:gatewayID', function(req, res)
 	var password = req.body.password;
 
 	console.log("Setting gateway to %s,%s", ssid, password);
-	var settingsURL = ip + "gateway/settings/" + gatewayID;
+	var settingsURL = hubEngineIP + "gateway/settings/" + gatewayID;
 	request.post({
 		url : settingsURL,
 		form : {
@@ -215,7 +217,7 @@ app.get('/configure/gateway/:gatewayID', function(req, res)
 	// gateway/settings/:gatewayID
 
 	var gatewayID = req.params.gatewayID;
-	var settingsURL = ip + "gateway/settings/" + gatewayID;
+	var settingsURL = hubEngineIP + "gateway/settings/" + gatewayID;
 	request.get(settingsURL, function(error, response, body)
 	{
 		var data = "";
@@ -267,7 +269,7 @@ app.get('/info/panicbutton/:gatewayID/:deviceID', function(req, res)
 
 	var gatewayID = req.params.gatewayID;
 	var deviceID = req.params.deviceID;
-	var settingsURL = ip + "panicbutton/history/" + gatewayID + "/" + deviceID;
+	var settingsURL = hubEngineIP + "panicbutton/history/" + gatewayID + "/" + deviceID;
 	console.log("Going to %s", settingsURL);
 	request.get(settingsURL, function(error, response, body)
 	{
@@ -313,7 +315,7 @@ app.get('/configure/panicbutton/:gatewayID/:deviceID', function(req, res)
 
 	var gatewayID = req.params.gatewayID;
 	var deviceID = req.params.deviceID;
-	var settingsURL = ip + "panicbutton/settings/" + gatewayID + "/" + deviceID;
+	var settingsURL = hubEngineIP + "panicbutton/settings/" + gatewayID + "/" + deviceID;
 	// console.log("Going to %s",settingsURL);
 	request.get(settingsURL, function(error, response, body)
 	{
@@ -390,7 +392,7 @@ app.post('/configure/panicbutton/settings/:gatewayID/:deviceID', function(req, r
 	var callTimeout = req.body.callTimeout;
 
 	// console.log("Setting gateway to %s,%s", ssid, password);
-	var settingsURL = ip + "panicbutton/settings/" + gatewayID + "/" + deviceID;
+	var settingsURL = hubEngineIP + "panicbutton/settings/" + gatewayID + "/" + deviceID;
 	request.post({
 		url : settingsURL,
 		form : {
