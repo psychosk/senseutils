@@ -21,7 +21,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 var logdir = "/var/tmp/hubEngine.log"
 
 var ip = "http://52.77.250.237:4000/";
-var hubEngineIP = "http://hub.smartsense.co.in:7320/";
+var hubEngineIP = "http://hub.smartsense.co.in:80/";
 
 if (process.env.NODE_ENV === 'dev')
 {
