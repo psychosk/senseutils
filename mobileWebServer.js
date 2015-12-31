@@ -20,12 +20,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 var logdir = "/var/tmp/hubEngine.log"
 
-var ip = "hub.smartsense.co.in:4000/";
+var ip = "http://hub.smartsense.co.in:4000/";
 
 if (process.env.NODE_ENV === 'dev')
 {
 	console.log("Using dev environment!");
-	ip = "localhost:4000/";
+	ip = "http://localhost:4000/";
 	app.use(express.errorHandler());
 }
 
