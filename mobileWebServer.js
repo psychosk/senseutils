@@ -79,6 +79,7 @@ app.post('/user/registerUser', function(req, res)
 	var emailID = req.body.emailID;
 	var password = req.body.password;
 	var registerURL = hubEngineIP + "user/registerUser/" + emailID + "/" + password;
+	console.log("Hitting %s",registerURL);
 	request.post(registerURL, function(error, response, body)
 	{
 		if (!error && response.statusCode == 200)
