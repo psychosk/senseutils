@@ -15,22 +15,22 @@ if (args[0] == null || args[1] == null || args[2] == null)
 	process.exit(1);
 }
 
-var ip = "hub.smartsense.co.in:80/";
-var wsIP = "hub.smartsense.co.in:3000/";
+var hubEngineIP = "hub.smartsense.co.in:80/";
+var hubEngineWSIP = "hub.smartsense.co.in:3000/";
 
 if (process.env.NODE_ENV === 'dev')
 {
-	ip = "localhost:7320/";
-	wsIP = "localhost:3000/";
+	hubEngineIP = "localhost:7320/";
+	hubEngineWSIP = "localhost:3000/";
 }
 
 var registerUserURL = "gateway/register/USERID/GATEWAYMAC/PRIVATEIP";
-var registerURL = "http://" + ip + registerUserURL.replace(/USERID/, userID).replace(/GATEWAYMAC/, gatewayMac).replace(/PRIVATEIP/, privateIP);
+var registerURL = "http://" + hubEngineIP + registerUserURL.replace(/USERID/, userID).replace(/GATEWAYMAC/, gatewayMac).replace(/PRIVATEIP/, privateIP);
 
 var addDeviceURL = "gateway/registerDevice/GATEWAYID/ZRID/TYPE";
 var getSettingsURL = "gateway/settings/GATEWAYID";
 
-var wsURL = "ws://" + wsIP;
+var wsURL = "ws://" + hubEngineWSIP;
 
 // console.log("REST URL:%s\nWS URL:%s", registerURL, wsURL);
 
@@ -91,7 +91,7 @@ function initializeConnection(gatewayID)
 		});
 		process.on('sendDataToCloud', function(data)
 		{
-			console.log("Websocket message to cloud:%s", data);
+			//console.log("Websocket message to cloud:%s", data);
 			ws.send(data);
 		});
 	});
@@ -151,10 +151,29 @@ function handleMessageFromEngine(data, flags)
 			'status' : 'OK',
 			'requestID' : requestID
 		}));
+
+	} else if (command === '/smartPlug/controlDevice')
+	{
+		var action = params.action;
+		if (action==="0")
+			console.log("Switching smartPlugID:%s OFF",deviceID);
+		else if (action==="1")
+			console.log("Switching smartPlugID:%s ON",deviceID);
+		else 
+			console.log("Unknown action:%s",action);
+		
+		process.emit('sendDataToCloud', JSON.stringify({
+			'status' : 'OK',
+			'requestID' : requestID
+		}));
 	} else
 	{
 		console.log("Unknown command:%s", command);
 	}
+}
+
+function getDate(){
+	return new Date().toISOString().replace(/T/,' ').replace(/\.\d\d\dZ/,'');
 }
 
 function startPrompt(gatewayID)
@@ -213,8 +232,10 @@ function startPrompt(gatewayID)
 						if (result.action === "buttonpress")
 						{
 							var request2 = require('request');
-							// /panicButton/buttonPress/gatewayID/deviceID/timeStamp
-							var panicButtonPressURL = "http://" + ip + "panicButton/buttonPress/"+gatewayID+"/"+deviceID+"/2015-07-21T07:50:34+05:30";
+							//2016-01-01T01:33:26.000Z
+							var timeStamp = getDate();
+							console.log("Using timestamp %s",timeStamp);
+							var panicButtonPressURL = "http://" + hubEngineIP + "panicButton/buttonPress/"+gatewayID+"/"+deviceID+"/" + timeStamp;
 							console.log("Executing POST:%s",panicButtonPressURL)
 							request2.post(panicButtonPressURL, function(error, response, body)
 							{
@@ -231,7 +252,7 @@ function startPrompt(gatewayID)
 							console.log("Assuming phone number +919987792049");
 							var request2 = require('request');
 							// /panicButton/buttonPress/gatewayID/deviceID/timeStamp
-							var ivr = "http://" + ip + "panicButton/ivrSuccess/"+gatewayID+"/"+deviceID+"/+919987792049/2015-07-21T07:50:34+05:30";
+							var ivr = "http://" + hubEngineIP + "panicButton/ivrSuccess/"+gatewayID+"/"+deviceID+"/+919987792049/" + getDate();
 							console.log("Executing POST:%s",ivr)
 							request2.post(ivr, function(error, response, body)
 							{
@@ -246,7 +267,7 @@ function startPrompt(gatewayID)
 						} else if (result.action === 'ivrfailure')
 						{
 							var request2 = require('request');
-							var ivr = "http://" + ip + "panicButton/ivrFailure/"+gatewayID+"/"+deviceID+"/2015-07-21T07:50:34+05:30";
+							var ivr = "http://" + hubEngineIP + "panicButton/ivrFailure/"+gatewayID+"/"+deviceID+"/" + getDate();
 							console.log("Executing POST:%s",ivr)
 							request2.post(ivr, function(error, response, body)
 							{
@@ -262,7 +283,7 @@ function startPrompt(gatewayID)
 						{
 							var request2 = require('request');
 							console.log("Assuming number of g's is 2.0!");
-							var ivr = "http://" + ip + "panicButton/fallDetected/"+gatewayID+"/"+deviceID+"/2.0/2015-07-21T07:50:34+05:30";
+							var ivr = "http://" + hubEngineIP + "panicButton/fallDetected/"+gatewayID+"/"+deviceID+"/2.0/" + getDate();
 							console.log("Executing POST:%s",ivr)
 							request2.post(ivr, function(error, response, body)
 							{
@@ -278,7 +299,7 @@ function startPrompt(gatewayID)
 						{
 							var request2 = require('request');
 							console.log("Assuming number of g's is 2.0!");
-							var ivr = "http://" + ip + "panicButton/fallFalseAlarm/"+gatewayID+"/"+deviceID+"/2.0/2015-07-21T07:50:34+05:30";
+							var ivr = "http://" + hubEngineIP + "panicButton/fallFalseAlarm/"+gatewayID+"/"+deviceID+"/2.0/" + getDate();
 							console.log("Executing POST:%s",ivr)
 							request2.post(ivr, function(error, response, body)
 							{
@@ -294,7 +315,7 @@ function startPrompt(gatewayID)
 						{
 							var request2 = require('request');
 							console.log("Assuming battery level is 20%");
-							var ivr = "http://" + ip + "panicButton/lowBattery/"+gatewayID+"/"+deviceID+"/20/2015-07-21T07:50:34+05:30";
+							var ivr = "http://" + hubEngineIP + "panicButton/lowBattery/"+gatewayID+"/"+deviceID+"/20/"+getDate();
 							console.log("Executing POST:%s",ivr)
 							request2.post(ivr, function(error, response, body)
 							{
@@ -328,41 +349,25 @@ function startPrompt(gatewayID)
 				prompt.get([ 'ID' ], function(err, result)
 				{
 					var deviceID = result.ID;
-					console.log("Allowable actions:on,off");
+					console.log("Allowable actions:1 (switch on),0 (switch off)");
 					prompt.get([ 'action' ], function(err, result)
 					{
-						if (result.action === "on")
+						if (result.action === "1" || result.action==="0")
 						{
-//							var request2 = require('request');
-//							// /panicButton/buttonPress/gatewayID/deviceID/timeStamp
-//							var panicButtonPressURL = "http://" + ip + "panicButton/buttonPress/"+gatewayID+"/"+deviceID+"/2015-07-21T07:50:34+05:30";
-//							console.log("Executing POST:%s",panicButtonPressURL)
-//							request2.post(panicButtonPressURL, function(error, response, body)
-//							{
-//								if (error)
-//									console.log(error);
-//								else if (response.statusCode == 200)
-//									console.log("Panic button press acknowledged!");
-//								else
-//									console.log("Panic button press NOT acknowledged!");
-//								startPrompt(gatewayID);
-//							});
-						} else if (result.action === "of"){
-//							var request2 = require('request');
-//							// /panicButton/buttonPress/gatewayID/deviceID/timeStamp
-//							var panicButtonPressURL = "http://" + ip + "panicButton/buttonPress/"+gatewayID+"/"+deviceID+"/2015-07-21T07:50:34+05:30";
-//							console.log("Executing POST:%s",panicButtonPressURL)
-//							request2.post(panicButtonPressURL, function(error, response, body)
-//							{
-//								if (error)
-//									console.log(error);
-//								else if (response.statusCode == 200)
-//									console.log("Panic button press acknowledged!");
-//								else
-//									console.log("Panic button press NOT acknowledged!");
-//								startPrompt(gatewayID);
-//							});
-							
+							var request2 = require('request');
+							// /panicButton/buttonPress/gatewayID/deviceID/timeStamp
+							var url = "http://" + hubEngineIP + "smartPlug/manualAction/"+gatewayID+"/"+deviceID+"/"+result.action+"/"+getDate();
+							console.log("Executing POST:%s",url)
+							request2.post(url, function(error2, response2, body2)
+							{
+								if (error2){
+									console.log(error2);
+								} else if (response2.statusCode == 200)
+									console.log("Smart plug manual action acknowledged!");
+								else
+									console.log("Smart plug manual action NOT acknowledged:%s",response2.statusCode);
+								startPrompt(gatewayID);
+							});
 						}
 					});
 				});
@@ -380,7 +385,7 @@ var smartPlugs = [];
 
 function registerZigbeeDevice(gatewayID, zigbeeRadioID, type, callback)
 {
-	var url = "http://" + ip + addDeviceURL.replace(/GATEWAYID/, gatewayID).replace(/ZRID/, zigbeeRadioID).replace(/TYPE/, type);
+	var url = "http://" + hubEngineIP + addDeviceURL.replace(/GATEWAYID/, gatewayID).replace(/ZRID/, zigbeeRadioID).replace(/TYPE/, type);
 
 	console.log("Executing POST:%s", url);
 	request.post(url, function(error, response, body)
