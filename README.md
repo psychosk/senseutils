@@ -1,13 +1,23 @@
 # senseutils
 
 This package consists of a 
-- webserver that acts like a mobile application
+- mobile app simulator
 - hub/panicbutton/smartplug device simulator
 
 The mobile app does almost everything you can do through the real mobile app.
 The simulator actually performs most of the actions that the real devices will do. It sends messages to the cloud and waits for any incoming messages from the cloud.
 
-# mobile application
+# quick start guide
+
+1) Follow the instructions on the mobile app simulator to create an account for yourself. Note the userID it prints on the screen.
+2) Startup the gateway simulator with this userID (along with any fake mac address and fake private ip address). This will register this gateway with your userid.
+3) Refresh the device listing screen on the mobile app, your gateway will now be listed.
+4) Configure the gateway just added if you wish through the mobile app. 
+5) Next, in the gateway simulator, add in a panic button and smart plug.
+6) Refresh the device listing screen on the mobile app, your panic button and smart plug will now be added. You can take actions on them as you wish.
+7) Next, start the tracker simulator with the same userID (along with any fake IMEI number but real phone number). After registration, you will be able to refresh the device listing screen on the mobile app and see the newly configured tracker.
+
+# mobile app simulator
 
 It is up and running on *http://hub.smartsense.co.in:4000*
 
@@ -35,9 +45,9 @@ This sample mobile app allows you to:
 
 ## Prerequisites:
 You should have installed node.js and npm on your system. 
-Clone the project into a directory
-Run these commands:
-npm install 
+Clone this project into a directory (ie git clone https://github.com/psychosk/senseutils.git)
+Go into that directory.
+Install all npm dependencies (ie npm install)
 
 ## hubDevice.js
 
