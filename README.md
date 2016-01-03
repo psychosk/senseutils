@@ -4,20 +4,32 @@ This package consists of a
 - webserver that acts like a mobile application
 - hub/panicbutton/smartplug device simulator
 
+The mobile app does almost everything you can do through the real mobile app.
+The simulator actually performs most of the actions that the real devices will do. It sends messages to the cloud and waits for any incoming messages from the cloud.
+
 # mobile application
 
 It is up and running on *http://hub.smartsense.co.in:4000*
 
 This sample mobile app allows you to:
-- create an account with smartsense (gives you a unique userID, you can use this userID to startup a hub simulator - see documentation on DEVICE SIMULATOR)
+- create an account with smartsense 
+	Gives you a unique userID, you can use this userID to startup a hub simulator 
 - See/Configure gateways
+	Configure the wifi ssid/password
 - See/Configure panic buttons
+	Configure the settings for the panic button
 - See audit trail of panic buttons
-- See/configure smart plugs 
+	See when panic buttons were pressed, what happened with the ivr call tree, what happened with falls etc
+- Disable panic button SOS mode (to be implemented)
+- See smart plugs 
 - See audit trail of smart plugs
+- Switch on/off smart plugs
+	This will actually send a message to the cloud which will then send a message to a smart plug (or a smart plug emulator) to tell it to switch on or off.	
 - See/Configure trackers
+	Configure tracker options (emergency contact info, admin contact, call timeout, heartbeat, etc)
 - See audit trail of tracker events and location data 
-- See/Configure cameras 
+	See what events happened with a tracker. See historical location data for the tracker.
+- See/Configure cameras (to be implemented)
 
 # device simulators
 
@@ -45,8 +57,6 @@ iii) smart plug
 		You can simulate events such as :
 			- manually switching on or off the load connected to the smart plug
 
-It maintains full connectivity with the cloud and prints out what RESTFUL web service calls it is making or what data it may be sending down a websocket connection.
-						
 To startup the simulator, you need to execute hubDevice.js with the following arguments:
 i)   userID (which you can obtain by registering for an account through the website)
 ii)  gatewayMAC (any freeform string for now)
@@ -68,3 +78,19 @@ After picking a smart plug that is currently linked to the gateway that you are 
 
 ## trackerDevice.js
 This acts as a hardware simulator for a tracker.
+
+With this simulator, you can emulate:
+- Emulating a panic button press
+- Emulating IVR success or IVR failure (to be implemented)
+- Emulating posting in a location update (complete with latitude, longtitude, speed, altitude, battery level, gps source, etc).
+
+To startup the tracker simulator, you need to pass the following arguments:
+i)   the IMEI number (any free form string for now)
+ii)  the phone number of the tracker (should be a proper phone number (eg +919987792049))
+iii) your userID
+
+For example:
+node ./trackerDevice IMEI10001 +919987792049 16
+
+After starting up, the cloud will send you an ACTIVATION message on the phone number that you provide. The simulator will then request that number from you. After that, the simulator will start.
+
