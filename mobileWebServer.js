@@ -215,7 +215,6 @@ app.post('/configure/gateway/modifysettings/:gatewayID', function(req, res)
 
 });
 
-
 /**
  * get the settings from the server
  */
