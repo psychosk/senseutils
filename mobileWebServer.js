@@ -20,7 +20,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 var logdir = "/var/tmp/hubEngine.log"
 
-var webserverIP = "http://52.77.250.237:4000/";
+var webserverIP = "http://hub.smartsense.co.in:4000/";
 var hubEngineIP = "http://hub.smartsense.co.in:80/";
 var trackerEngineIP = "http://tracker.smartsense.co.in:80/";
 
