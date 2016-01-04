@@ -259,7 +259,7 @@ app.get('/configure/gateway/:gatewayID', function(req, res)
 
 		} else
 		{
-			data += "Error:" + JSON.parse(body).error;
+			data += "Error:"+error;
 		}
 		res.send(data);
 	});
