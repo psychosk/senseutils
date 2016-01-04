@@ -120,21 +120,25 @@ function startPrompt(trackerID)
 				output : process.stdout
 			});
 
-			rl.question("Please type in location:LAT,LONG,SPEED,ALTI,Net,BLV,ALERT\n", function(answer)
+			rl.question("Please type in location:LAT,LONG,SPEED,ALTI,isLocationGPSDerived(0 or 1),BLV(battery level ie 40)\n", function(answer)
 			{
 				rl.close();
 				var params = answer.split(",");
+				var gpsDerived = "1";//implies LBS
+				if (params[4] === "1")
+					gpsDerived = "2";//implies GPS
+					
 				var opts = {
 					Ops : "A",
 					TID : trackerID,
 					DateTime : getDate(),
 					LAT : params[0],
-					LONG : params[1],
+					LON : params[1],
 					Speed : params[2],
 					Alti : params[3],
-					Net : params[4],
+					NET : gpsDerived,
 					BLV : params[5],
-					ALERT : params[6]
+					ALERT : "MSG"
 				};
 				
 				console.log("Registering location update with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
