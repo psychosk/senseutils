@@ -210,8 +210,8 @@ function startPrompt(gatewayID)
 			});
 		} else if (result.command === 'panicButtonAction')
 		{
-
-			request.get("http://localhost:7320/user/alldevices/" + userID, function(error, response, body)
+			var allDevicesURL = "http://"+hubEngineIP +"user/alldevices/" + userID;
+			request.get(allDevicesURL, function(error, response, body)
 			{
 				console.log("Registered panic buttons....");
 				var params = JSON.parse(response.body);
