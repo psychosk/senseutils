@@ -333,8 +333,7 @@ function startPrompt(gatewayID)
 			});
 		} else if (result.command === 'smartPlugAction')
 		{
-
-			request.get("http://localhost:7320/user/alldevices/" + userID, function(error, response, body)
+			request.get(allDevicesURL, function(error, response, body)
 			{
 				console.log("Registered smart plugs ....");
 				var params = JSON.parse(response.body);
