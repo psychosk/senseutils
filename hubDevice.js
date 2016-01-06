@@ -333,6 +333,7 @@ function startPrompt(gatewayID)
 			});
 		} else if (result.command === 'smartPlugAction')
 		{
+			var allDevicesURL = "http://"+hubEngineIP +"user/alldevices/" + userID;
 			request.get(allDevicesURL, function(error, response, body)
 			{
 				console.log("Registered smart plugs ....");
