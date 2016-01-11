@@ -184,7 +184,7 @@ app.post('/user/registerUser', function(req, res)
 
 		} else
 		{
-			var back = "ERROR:"+error+",RESPONSE" +response;
+			var back = "ERROR:"+error+",BODY" +body;
 			console.log(back);
 			res.send(back);
 		}
