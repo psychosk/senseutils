@@ -184,8 +184,9 @@ app.post('/user/registerUser', function(req, res)
 
 		} else
 		{
-			console.log("STATUSCODE:%s", response.statusCode);
-			res.send("STATUSCODE:" + response.statusCode + ",ERR:" + error);
+			var back = "ERROR:"+error+",RESPONSE" +response;
+			console.log(back);
+			res.send(back);
 		}
 		;
 	});
@@ -259,7 +260,7 @@ app.get('/configure/gateway/:gatewayID', function(req, res)
 
 		} else
 		{
-			data += "Error:"+error;
+			data += "Error:"+JSON.parse(response.body).error;
 		}
 		res.send(data);
 	});

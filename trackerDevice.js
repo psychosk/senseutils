@@ -91,10 +91,10 @@ function startPrompt(trackerID)
 		if (command === 'panic')
 		{
 			var opts = {
-				Alert : "SOS",
-				Ops : "M",
+				ALERT : "SOS",
+				OPS : "M",
 				TID : trackerID,
-				DateTime : getDate()
+				DATETIME : getDate()
 			};
 			console.log("Registering panic button press with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
 			request.post({
@@ -129,9 +129,9 @@ function startPrompt(trackerID)
 					gpsDerived = "2";//implies GPS
 					
 				var opts = {
-					Ops : "A",
+					OPS : "A",
 					TID : trackerID,
-					DateTime : getDate(),
+					DATETIME : getDate(),
 					LAT : params[0],
 					LON : params[1],
 					Speed : params[2],

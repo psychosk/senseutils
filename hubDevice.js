@@ -170,6 +170,7 @@ function handleMessageFromEngine(data, flags)
 	{
 		console.log("Unknown command:%s", command);
 	}
+	startPrompt();
 }
 
 function getDate(){
