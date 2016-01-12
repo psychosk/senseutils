@@ -30,7 +30,7 @@ var registerURL = "http://" + hubEngineIP + registerUserURL.replace(/USERID/, us
 var addDeviceURL = "gateway/registerDevice/GATEWAYID/ZRID/TYPE";
 var getSettingsURL = "gateway/settings/GATEWAYID";
 
-var wsURL = "ws://" + hubEngineWSIP + "/?gatewayID=G1&userID=U1";
+var wsURL = "ws://" + hubEngineWSIP + "?gatewayID=G1&userID=U1";
 
 // console.log("REST URL:%s\nWS URL:%s", registerURL, wsURL);
 
