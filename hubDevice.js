@@ -30,7 +30,7 @@ var registerURL = "http://" + hubEngineIP + registerUserURL.replace(/USERID/, us
 var addDeviceURL = "gateway/registerDevice/GATEWAYID/ZRID/TYPE";
 var getSettingsURL = "gateway/settings/GATEWAYID";
 
-var wsURL = "ws://" + hubEngineWSIP;
+var wsURL = "ws://" + hubEngineWSIP + "/?gatewayID=G1&userID=U1";
 
 // console.log("REST URL:%s\nWS URL:%s", registerURL, wsURL);
 
@@ -58,23 +58,15 @@ request.post(registerURL, function(error, response, body)
 
 function initializeConnection(gatewayID)
 {
-	console.log("Opening websocket connection with URL:%s", wsURL);
-	var ws = new WebSocket(wsURL);
+	var initURL = wsURL.replace(/G1/,gatewayID).replace(/U1/,userID);
+	console.log("Opening websocket connection with URL:%s", initURL);
+	var ws = new WebSocket(initURL);
 	var initialized = false;
 	ws.on('open', function open()
 	{
-		console.log("Websocket connection accepted.");
-
-		var init = {
-			"command" : "/gateway/initialize",
-			"gatewayID" : gatewayID,
-			"userID" : userID
-		};
-		// assert your credentials on init
-		ws.send(JSON.stringify(init));
-
-		console.log("Sending initialization command on websocket channel:%s", JSON.stringify(init));
-
+		console.log("Websocket connection opened.");
+		console.log("Waiting for acknowledgement from cloud.");
+		
 		ws.once('message', function(data, flags)
 		{
 			var data = JSON.parse(data);
@@ -170,7 +162,7 @@ function handleMessageFromEngine(data, flags)
 	{
 		console.log("Unknown command:%s", command);
 	}
-	startPrompt();
+	
 }
 
 function getDate(){
