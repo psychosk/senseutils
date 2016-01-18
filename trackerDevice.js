@@ -1,6 +1,5 @@
 'use strict';
 
-var WebSocket = require('ws');
 var request = require('request');
 var prompt = require('prompt');
 
@@ -16,12 +15,9 @@ if (args[0] == null || args[1] == null || args[2] == null)
 }
 
 var trackerEngineIP = "tracker.smartsense.co.in:80/";
-var hubEngineIP = "hub.smartsense.co.in:80/";
-
 if (process.env.NODE_ENV === 'dev')
 {
-	hubEngineIP = "localhost:7320/";
-	trackerEngineIP = "localhost:7321/";
+	trackerEngineIP = "localhost:7326/";
 }
 
 var initURL = "http://" + trackerEngineIP + "tracker/register";
@@ -124,10 +120,10 @@ function startPrompt(trackerID)
 			{
 				rl.close();
 				var params = answer.split(",");
-				var gpsDerived = "1";//implies LBS
+				var gpsDerived = "1";// implies LBS
 				if (params[4] === "1")
-					gpsDerived = "2";//implies GPS
-					
+					gpsDerived = "2";// implies GPS
+
 				var opts = {
 					OPS : "A",
 					TID : trackerID,
@@ -140,7 +136,7 @@ function startPrompt(trackerID)
 					BLV : params[5],
 					ALERT : "MSG"
 				};
-				
+
 				console.log("Registering location update with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
 				request.post({
 					url : dataURL,

@@ -16,9 +16,10 @@ if (args[0] == null || args[1] == null || args[2] == null || args[3] == null)
 	process.exit(1);
 }
 
-var hubEngineIP = "hub.smartsense.co.in:80/";
-var appEngineIP = "hub.smartsense.co.in:foo/"
-var hubEngineWSIP = "hub.smartsense.co.in:3000/";
+var hubEngineIP = "hub.smartsense.co.in:7320/";
+var hubEngineWSIP = "hub.smartsense.co.in:7321/";
+var appEngineIP = "app.smartsense.co.in:80/"
+
 
 if (process.env.NODE_ENV === 'dev')
 {
