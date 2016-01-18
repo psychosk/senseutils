@@ -5,6 +5,8 @@
 var express = require('express'), routes = require('./routes'), user = require('./routes/user'), http = require('http'), path = require('path');
 var forms = require('forms');
 var request = require('request');
+var util = require('util');
+// var bodyParser = require('body-parser');
 var app = express();
 
 // all environments
@@ -23,13 +25,21 @@ var logdir = "/var/tmp/hubEngine.log"
 var webserverIP = "http://hub.smartsense.co.in:4000/";
 var hubEngineIP = "http://hub.smartsense.co.in:80/";
 var trackerEngineIP = "http://tracker.smartsense.co.in:80/";
+var appEngineIP = "http://app.smartsense.co.in:80/";
+
+var sessionData = {};
+
+// var userToken = null;
+// var userID = null;
+var self = this;
 
 if (process.env.NODE_ENV === 'dev')
 {
 	console.log("Using dev environment!");
 	webserverIP = "http://localhost:4000/";
 	hubEngineIP = "http://localhost:7320/";
-	trackerEngineIP = "http://localhost:7321/";
+	// trackerEngineIP = "http://localhost:7321/";
+	appEngineIP = "http://localhost:7322/";
 	app.use(express.errorHandler());
 }
 
@@ -50,8 +60,7 @@ app.get('/', function(req, res)
 		}
 	});
 	// opens the form
-	data += myForm.open(); // will return: <form action="/signup"
-	// class="myform-class">
+	data += myForm.open();
 
 	data += "Email:";
 
@@ -63,7 +72,9 @@ app.get('/', function(req, res)
 	data += myForm.password().attr('name', 'password').render();
 	data += "<br>";
 
-	data += myForm.submit().attr('value', 'create account/login').render();
+	data += myForm.submit().attr('value', 'create account').attr('name', 'submitButton').render();
+
+	data += myForm.submit().attr('value', 'login').attr('name', 'submitButton').render();
 
 	// closes form
 	data += myForm.end(); // returns </form>
@@ -71,125 +82,189 @@ app.get('/', function(req, res)
 	res.send(data);
 });
 
-// global!
-var userID = null;
-
 app.post('/user/registerUser', function(req, res)
 {
 	var emailID = req.body.emailID;
 	var password = req.body.password;
-	var registerURL = hubEngineIP + "user/registerUser/" + emailID + "/" + password;
-	console.log("Hitting %s", registerURL);
-	request.post(registerURL, function(error, response, body)
+
+	var action = req.body.submitButton;
+	var data = "";
+
+	if (action === 'create account')
 	{
-		if (!error && response.statusCode == 200)
+		var registerURL = appEngineIP + "user/create";
+		console.log("Hitting %s", registerURL);
+		request.post({
+			url : registerURL,
+			form : {
+				email : emailID,
+				password : password
+			}
+		}, function(error, response, body)
 		{
-			var responseParams = JSON.parse(body);
-			userID = responseParams.userID;
-			console.log("Registration accepted, userID:%s", userID);
 
-			var data = "";
-			data += "<b>YOUR USERID IS:" + userID + "</b><br>";
-
-			var getDevicesUrl = hubEngineIP + "user/alldevices/" + userID;
-			var request2 = require('request');
-			request2.get(getDevicesUrl, function(error, response, body)
+			if (!error && response.statusCode == 200)
 			{
-				var gateways = [];
-				var cameras = [];
-				var trackers = [];
-				var panicbuttons = [];
-				var smartplugs = [];
+				var responseParams = JSON.parse(body);
+				sessionData[responseParams.userID] = {};
+				console.log("Registration accepted, userID:%s", responseParams.userID);
+				data += util.format("Registration accepted userID:%s. Go back to login now.", responseParams.userID);
+			} else
+			{
+				console.log("Registration failed!");
+				data += util.format("Registration failed!");
+				data += util.format("ERROR:%s", error);
+				data += util.format("STATUSCODE:%s", response && response.statusCode);
+				data += util.format("BODY:%s", response.body && response.body);
+			}
 
-				var params = JSON.parse(response.body);
-				for (var i = 0; i < params.length; i++)
+			res.send(data);
+		});
+
+	} else if (action === 'login')
+	{
+		var loginURL = appEngineIP + "user/login";
+		console.log("Hitting %s", loginURL);
+		request.post({
+			url : loginURL,
+			form : {
+				email : emailID,
+				password : password
+			}
+		}, function(error, response, body)
+		{
+			if (!error && response.statusCode == 200)
+			{
+				var responseParams = JSON.parse(body);
+				self.userToken = responseParams.token;
+				self.userID = responseParams.id;
+				console.log("Login accepted, token is %s and userID is %s", self.userToken, self.userID);
+				sessionData[responseParams.id] = {
+					token : responseParams.token
+				};
+
+				console.log("Session data now looks like %s", JSON.stringify(sessionData));
+
+				var getDevicesUrl = appEngineIP + "user/alldevices";
+				var request2 = require('request');
+				request2.get({
+					url : getDevicesUrl,
+					headers : {
+						token : self.userToken,
+						userid : self.userID
+					}
+				}, function(error, response, body)
 				{
-					var row = params[i];
-					console.log("Processing %s",JSON.stringify(row));
-					if (row.type === 'gateway')
+					if (!error && response.statusCode == 200)
 					{
-						gateways.push(row.deviceID);
-					} else if (row.type === 'tracker')
-					{
-						trackers.push(row.deviceID);
-					} else if (row.type === 'camera')
-					{
-						cameras.push(row.deviceID);
-					} else if (row.type === 'PA')
-					{
-						panicbuttons.push({
-							deviceID : row.deviceID,
-							gatewayID : row.linkedGatewayID
-						});
-					} else if (row.type === 'SM')
-					{
-						smartplugs.push({
-							deviceID : row.deviceID,
-							gatewayID : row.linkedGatewayID
-						});
+
+						var gateways = [];
+						var cameras = [];
+						var trackers = [];
+						var panicbuttons = [];
+						var smartplugs = [];
+
+						var params = JSON.parse(response.body);
+						for (var i = 0; i < params.length; i++)
+						{
+							var row = params[i];
+							console.log("Processing %s", JSON.stringify(row));
+							if (row.type === 'gateway')
+							{
+								gateways.push(row.deviceID);
+							} else if (row.type === 'tracker')
+							{
+								trackers.push(row.deviceID);
+							} else if (row.type === 'camera')
+							{
+								cameras.push(row.deviceID);
+							} else if (row.type === 'PA')
+							{
+								panicbuttons.push({
+									deviceID : row.deviceID,
+									gatewayID : row.linkedGatewayID
+								});
+							} else if (row.type === 'SM')
+							{
+								smartplugs.push({
+									deviceID : row.deviceID,
+									gatewayID : row.linkedGatewayID
+								});
+							} else
+							{
+								console.log("Unknown type:%s", row.type);
+							}
+						}
+
+						data += "<b>Your linked gateways:</b><br>";
+
+						for (var i = 0; i < gateways.length; ++i)
+						{
+							data += "GatewayID:" + gateways[i] + "<a href=\"" + webserverIP + "configure/gateway/" + gateways[i] + "\">Configure</a><br>"
+						}
+
+						data += "<b>Your linked panic buttons:</b><br>";
+
+						for (var i = 0; i < panicbuttons.length; ++i)
+						{
+							var deviceID = panicbuttons[i].deviceID;
+							var gatewayID = panicbuttons[i].gatewayID;
+							data += "DeviceID:" + deviceID + "<a href=\"" + webserverIP + "configure/panicbutton/" + gatewayID + "/" + deviceID + "\">Configure</a>  "
+							data += "<a href=\"" + webserverIP + "info/panicbutton/" + gatewayID + "/" + deviceID + "\">Info</a><br>";
+						}
+
+						data += "<b>Your linked smart plugs:</b><br>";
+
+						for (var i = 0; i < smartplugs.length; ++i)
+						{
+							var deviceID = smartplugs[i].deviceID;
+							var gatewayID = smartplugs[i].gatewayID;
+							data += "DeviceID:" + deviceID + "<a href=\"" + webserverIP + "configure/smartplug/" + gatewayID + "/" + deviceID + "\">Configure</a>  "
+							data += "<a href=\"" + webserverIP + "info/smartplug/" + gatewayID + "/" + deviceID + "\">Info</a>  ";
+							data += "<a href=\"" + webserverIP + "action/smartplug/" + gatewayID + "/" + deviceID + "/1\">Switch on</a>  ";
+							data += "<a href=\"" + webserverIP + "action/smartplug/" + gatewayID + "/" + deviceID + "/0\">Switch off</a><br>";
+						}
+
+						data += "<b>Your linked cameras</b>:<br>";
+
+						for (var i = 0; i < cameras.length; ++i)
+						{
+							data += "CameraID:" + cameras[i] + "<a href=\"" + webserverIP + "configure/camera/" + cameras[i] + "\">Configure</a><br>"
+						}
+
+						data += "<b>Your linked trackers:</b><br>";
+
+						for (var i = 0; i < trackers.length; ++i)
+						{
+							data += "TrackerID:" + trackers[i] + "<a href=\"" + webserverIP + "configure/tracker/" + trackers[i] + "\">Configure</a>";
+							data += "  <a href=\"" + webserverIP + "info/tracker/" + trackers[i] + "\">Info</a>";
+							data += "<br>";
+
+						}
 					} else
 					{
-						console.log("Unknown type:%s", row.type);
+						console.log("Get failed!");
+						data += util.format("Login failed!");
+						data += util.format("ERROR:%s", error);
+						data += util.format("STATUSCODE:%s", response && response.statusCode);
+						data += util.format("BODY:%s", body);
 					}
-				}
+					res.send(data);
 
-				data += "<b>Your linked gateways:</b><br>";
+				});
 
-				for (var i = 0; i < gateways.length; ++i)
-				{
-					data += "GatewayID:" + gateways[i] + "<a href=\"" + webserverIP + "configure/gateway/" + gateways[i] + "\">Configure</a><br>"
-				}
+			} else
+			{
+				console.log("Login failed!");
+				data += util.format("Login failed!");
+				data += util.format("ERROR:%s", error);
+				data += util.format("STATUSCODE:%s", response && response.statusCode);
+				data += util.format("BODY:%s", body);
 
-				data += "<b>Your linked panic buttons:</b><br>";
+			}
+		});
 
-				for (var i = 0; i < panicbuttons.length; ++i)
-				{
-					var deviceID = panicbuttons[i].deviceID;
-					var gatewayID = panicbuttons[i].gatewayID;
-					data += "DeviceID:" + deviceID + "<a href=\"" + webserverIP + "configure/panicbutton/" + gatewayID + "/" + deviceID + "\">Configure</a>  "
-					data += "<a href=\"" + webserverIP + "info/panicbutton/" + gatewayID + "/" + deviceID + "\">Info</a><br>";
-				}
-
-				data += "<b>Your linked smart plugs:</b><br>";
-
-				for (var i = 0; i < smartplugs.length; ++i)
-				{
-					var deviceID = smartplugs[i].deviceID;
-					var gatewayID = smartplugs[i].gatewayID;
-					data += "DeviceID:" + deviceID + "<a href=\"" + webserverIP + "configure/smartplug/" + gatewayID + "/" + deviceID + "\">Configure</a>  "
-					data += "<a href=\"" + webserverIP + "info/smartplug/" + gatewayID + "/" + deviceID + "\">Info</a>  ";
-					data += "<a href=\"" + webserverIP + "action/smartplug/" + gatewayID + "/" + deviceID + "/1\">Switch on</a>  ";
-					data += "<a href=\"" + webserverIP + "action/smartplug/" + gatewayID + "/" + deviceID + "/0\">Switch off</a><br>";
-				}
-
-				data += "<b>Your linked cameras</b>:<br>";
-
-				for (var i = 0; i < cameras.length; ++i)
-				{
-					data += "CameraID:" + cameras[i] + "<a href=\"" + webserverIP + "configure/camera/" + cameras[i] + "\">Configure</a><br>"
-				}
-
-				data += "<b>Your linked trackers:</b><br>";
-
-				for (var i = 0; i < trackers.length; ++i)
-				{
-					data += "TrackerID:" + trackers[i] + "<a href=\"" + webserverIP + "configure/tracker/" + trackers[i] + "\">Configure</a>";
-					data += "  <a href=\"" + webserverIP + "info/tracker/" + trackers[i] + "\">Info</a>";
-					data += "<br>";
-					
-				}
-				res.send(data);
-
-			});
-
-		} else
-		{
-			var back = "ERROR:"+error+",BODY" +body;
-			console.log(back);
-			res.send(back);
-		}
-		;
-	});
+	}
 });
 
 /**
@@ -202,12 +277,16 @@ app.post('/configure/gateway/modifysettings/:gatewayID', function(req, res)
 	var password = req.body.password;
 
 	console.log("Setting gateway to %s,%s", ssid, password);
-	var settingsURL = hubEngineIP + "gateway/settings/" + gatewayID;
+	var settingsURL = appEngineIP + "gateway/settings/" + gatewayID;
 	request.post({
 		url : settingsURL,
 		form : {
 			ssid : ssid,
 			password : password
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
 		}
 	}, function(error, response, body)
 	{
@@ -225,8 +304,16 @@ app.get('/configure/gateway/:gatewayID', function(req, res)
 	// gateway/settings/:gatewayID
 
 	var gatewayID = req.params.gatewayID;
-	var settingsURL = hubEngineIP + "gateway/settings/" + gatewayID;
-	request.get(settingsURL, function(error, response, body)
+
+	var settingsURL = appEngineIP + "gateway/settings/" + gatewayID;
+	console.log("HITTING:%s", settingsURL);
+	request.get({
+		url : settingsURL,
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
 	{
 		var data = "";
 		if (response.statusCode == 200)
@@ -260,7 +347,7 @@ app.get('/configure/gateway/:gatewayID', function(req, res)
 
 		} else
 		{
-			data += "Error:"+JSON.parse(response.body).error;
+			data += "Error:" + JSON.parse(response.body).error;
 		}
 		res.send(data);
 	});
@@ -277,9 +364,15 @@ app.get('/info/panicbutton/:gatewayID/:deviceID', function(req, res)
 
 	var gatewayID = req.params.gatewayID;
 	var deviceID = req.params.deviceID;
-	var settingsURL = hubEngineIP + "panicbutton/history/" + gatewayID + "/" + deviceID;
+	var settingsURL = appEngineIP + "panicbutton/history/" + gatewayID + "/" + deviceID;
 	console.log("Going to %s", settingsURL);
-	request.get(settingsURL, function(error, response, body)
+	request.get({
+		url : settingsURL,
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
 	{
 		// console.log(body);
 		// console.log("Got response!");
@@ -315,7 +408,8 @@ app.get('/info/panicbutton/:gatewayID/:deviceID', function(req, res)
 	});
 });
 
-app.post('/configure/panicbutton/settings/:gatewayID/:deviceID', function(req,res){
+app.post('/configure/panicbutton/settings/:gatewayID/:deviceID', function(req, res)
+{
 	var gatewayID = req.params.gatewayID;
 	var deviceID = req.params.deviceID;
 
@@ -326,9 +420,9 @@ app.post('/configure/panicbutton/settings/:gatewayID/:deviceID', function(req,re
 	var emergencyContact5 = req.body.emergencyContact5;
 	var adminNumber = req.body.adminNumber;
 	var callTimeout = req.body.callTimeout;
-	
+
 	console.log("Setting panic button configuration details to %s", JSON.stringify(req.body));
-	var settingsURL = hubEngineIP + "panicButton/settings/" + gatewayID + "/" + deviceID;
+	var settingsURL = appEngineIP + "panicButton/settings/" + gatewayID + "/" + deviceID;
 	request.post({
 		url : settingsURL,
 		form : {
@@ -339,18 +433,22 @@ app.post('/configure/panicbutton/settings/:gatewayID/:deviceID', function(req,re
 			p5 : emergencyContact5,
 			adminNumber : adminNumber,
 			callTimeout : callTimeout
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
 		}
 	}, function(error, response, body)
 	{
-		if (response.statusCode==200){
+		if (response.statusCode == 200)
+		{
 			res.send("Configuration set successfully!");
-		} else {
-			res.send("Error setting configuration:%s",error);
+		} else
+		{
+			res.send("Error setting configuration:%s", error);
 		}
 	});
 });
-
-
 
 /**
  * get the settings from the server
@@ -362,9 +460,15 @@ app.get('/configure/panicbutton/:gatewayID/:deviceID', function(req, res)
 
 	var gatewayID = req.params.gatewayID;
 	var deviceID = req.params.deviceID;
-	var settingsURL = hubEngineIP + "panicbutton/settings/" + gatewayID + "/" + deviceID;
+	var settingsURL = appEngineIP + "panicbutton/settings/" + gatewayID + "/" + deviceID;
 	// console.log("Going to %s",settingsURL);
-	request.get(settingsURL, function(error, response, body)
+	request.get({
+		url : settingsURL,
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
 	{
 		var data = "";
 		if (response.statusCode == 200)
@@ -437,9 +541,15 @@ app.get('/action/smartplug/:gatewayID/:deviceID/:action', function(req, res)
 	var deviceID = req.params.deviceID;
 	var action = req.params.action;
 
-	var url = hubEngineIP + "smartPlug/controlDevice/" + gatewayID + "/" + deviceID + "/" + action + "/" + getDate();
+	var url = appEngineIP + "smartPlug/controlDevice/" + gatewayID + "/" + deviceID + "/" + action + "/" + getDate();
 	console.log("Going to %s", url);
-	request.post(url, function(error, response, body)
+	request.post({
+		url : url,
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
 	{
 		if (error)
 		{
@@ -465,9 +575,15 @@ app.get('/info/smartplug/:gatewayID/:deviceID', function(req, res)
 
 	var gatewayID = req.params.gatewayID;
 	var deviceID = req.params.deviceID;
-	var settingsURL = hubEngineIP + "smartPlug/history/" + gatewayID + "/" + deviceID;
+	var settingsURL = appEngineIP + "smartPlug/history/" + gatewayID + "/" + deviceID;
 	console.log("Going to %s", settingsURL);
-	request.get(settingsURL, function(error, response, body)
+	request.get({
+		url : settingsURL,
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
 	{
 		// console.log(body);
 		// console.log("Got response!");
@@ -500,7 +616,8 @@ app.get('/info/smartplug/:gatewayID/:deviceID', function(req, res)
 	});
 });
 
-app.post('/configure/tracker/modifysettings/:userTrackerPairID', function(req,res){
+app.post('/configure/tracker/modifysettings/:userTrackerPairID', function(req, res)
+{
 	var userTrackerPairID = req.params.userTrackerPairID;
 
 	var emergencyContact1 = req.body.emergencyContact1;
@@ -512,7 +629,7 @@ app.post('/configure/tracker/modifysettings/:userTrackerPairID', function(req,re
 	var callTimeout = req.body.callTimeout;
 	var heartbeat = req.body.heartbeat;
 	var callinEnabled = req.body.callinEnabled;
-	
+
 	console.log("Setting tracker configuration details to %s", JSON.stringify(req.body));
 	var settingsURL = trackerEngineIP + "tracker/settings/" + userTrackerPairID;
 	request.post({
@@ -530,10 +647,12 @@ app.post('/configure/tracker/modifysettings/:userTrackerPairID', function(req,re
 		}
 	}, function(error, response, body)
 	{
-		if (error==null && response.statusCode==200){
+		if (error == null && response.statusCode == 200)
+		{
 			res.send("Configuration set successfully!");
-		} else {
-			res.send("Error setting configuration:%s",error);
+		} else
+		{
+			res.send("Error setting configuration:%s", error);
 		}
 	});
 });
@@ -565,7 +684,8 @@ app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 			} else
 			{
 				data += "Emergency contact 1:" + emergencyContact1 + "<br>emergency contact 2:" + emergencyContact2 + "<br>emergency contact 3:" + emergencyContact3 + "<br>emergency contact 4:"
-						+ emergencyContact4 + "<br>emergencyContact 5:" + emergencyContact5 + "<br>adminNumber:" + adminNumber + "<br>callTimeout:" + callTimeout +"<br>heartbeat:" + heartbeat+"<br>"
+						+ emergencyContact4 + "<br>emergencyContact 5:" + emergencyContact5 + "<br>adminNumber:" + adminNumber + "<br>callTimeout:" + callTimeout + "<br>heartbeat:" + heartbeat
+						+ "<br>"
 			}
 			var Form = require('form-builder').Form;
 
@@ -581,25 +701,31 @@ app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 			data += "Alter settings...<br>";
 
 			data += "Emergency contact 1:"
-			data += myForm.text().attr('name', 'emergencyContact1').render() +"<br>";
+			data += myForm.text().attr('name', 'emergencyContact1').render() + "<br>";
 			data += "Emergency contact 2:"
-			data += myForm.text().attr('name', 'emergencyContact2').render()+"<br>";
+			data += myForm.text().attr('name', 'emergencyContact2').render() + "<br>";
 			data += "Emergency contact 3:"
-			data += myForm.text().attr('name', 'emergencyContact3').render()+"<br>";
+			data += myForm.text().attr('name', 'emergencyContact3').render() + "<br>";
 			data += "Emergency contact 4:"
-			data += myForm.text().attr('name', 'emergencyContact4').render()+"<br>";
+			data += myForm.text().attr('name', 'emergencyContact4').render() + "<br>";
 			data += "Emergency contact 5:"
-			data += myForm.text().attr('name', 'emergencyContact5').render()+"<br>";
+			data += myForm.text().attr('name', 'emergencyContact5').render() + "<br>";
 			data += "Admin number:"
-			data += myForm.text().attr('name', 'adminNumber').render()+"<br>";
+			data += myForm.text().attr('name', 'adminNumber').render() + "<br>";
 			data += "Call timeout:"
-			data += myForm.text().attr('name', 'callTimeout').render()+"<br>";
+			data += myForm.text().attr('name', 'callTimeout').render() + "<br>";
 			data += "Heartbeat:"
-				data += myForm.text().attr('name', 'heartbeat').render()+"<br>";
+			data += myForm.text().attr('name', 'heartbeat').render() + "<br>";
 			data += "Call in enabled:TRUE"
-				data += myForm.radio().attr({name : 'callinEnabled',value:'1'}).setDefault().render();
-			data += " FALSE" + myForm.radio().attr({name : 'callinEnabled',value:'0'}).render();
-			
+			data += myForm.radio().attr({
+				name : 'callinEnabled',
+				value : '1'
+			}).setDefault().render();
+			data += " FALSE" + myForm.radio().attr({
+				name : 'callinEnabled',
+				value : '0'
+			}).render();
+
 			data += "<br>";
 
 			data += myForm.submit().attr('value', 'change').render();
@@ -615,74 +741,80 @@ app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 /**
  * get the info from the server
  */
-app.get('/info/tracker/:userTrackerPairID', function(req, res)
-{
+app
+		.get(
+				'/info/tracker/:userTrackerPairID',
+				function(req, res)
+				{
 
-	// gateway/settings/:gatewayID
+					// gateway/settings/:gatewayID
 
-	var userTrackerPairID = req.params.userTrackerPairID;
-	var settingsURL = trackerEngineIP + "tracker/history/" + userTrackerPairID;
-	console.log("Going to %s", settingsURL);
-	var data ="";
-	request.get(settingsURL, function(error, response, body)
-	{
-		console.log("Response status code is :%s",response.statusCode);
-		if (error==null && response.statusCode == 200)
-		{
-			var params = JSON.parse(response.body);
-			var eventData = params.event;
-			var locationData = params.location;
+					var userTrackerPairID = req.params.userTrackerPairID;
+					var settingsURL = trackerEngineIP + "tracker/history/" + userTrackerPairID;
+					console.log("Going to %s", settingsURL);
+					var data = "";
+					request
+							.get(
+									settingsURL,
+									function(error, response, body)
+									{
+										console.log("Response status code is :%s", response.statusCode);
+										if (error == null && response.statusCode == 200)
+										{
+											var params = JSON.parse(response.body);
+											var eventData = params.event;
+											var locationData = params.location;
 
-			data += "<b>Event Data:</b><br><table><tr><td><b>Event</b></td><td><b>Timestamp</b></td><td><b>Phone number</b></td></tr>";
-			
-			for (var i = 0; i < eventData.length; i++)
-			{
-				var row = eventData[i];
-				console.log("Processing row %s", JSON.stringify(row));
+											data += "<b>Event Data:</b><br><table><tr><td><b>Event</b></td><td><b>Timestamp</b></td><td><b>Phone number</b></td></tr>";
 
-				data += "<tr>";
-				var event = "";
-				if (row.event === 'PA')
-					event = "Panic button press";
-				else if (row.event === 'SU')
-					event = "IVR success";
-				else if (row.event === 'FA')
-					event = "IVR failure";
-				else 
-					event = "Unknown event";
-				data += "<td>" + event + "</td>";
-				data += "<td>" + row.timeStamp + "</td>";
-				data += "<td>" + row.phoneNumber + "</td>";
-				data += "</tr>"
-			}
-			data += "</table><br>"
-			data += "<b>Location Data:</b><br><table><tr><td><b>Lat</b></td><td><b>Long</b></td><td><b>Speed</b></td><td><b>Altitude</b></td><td><b>Gps derived location?</b></td><td><b>Battery level (%)</b></td><td><b>Timestamp</b></td></tr>";
+											for (var i = 0; i < eventData.length; i++)
+											{
+												var row = eventData[i];
+												console.log("Processing row %s", JSON.stringify(row));
 
-			
-			for (var i = 0; i < locationData.length; i++)
-			{
-				var row = locationData[i];
-				console.log("Processing row %s", JSON.stringify(row));
+												data += "<tr>";
+												var event = "";
+												if (row.event === 'PA')
+													event = "Panic button press";
+												else if (row.event === 'SU')
+													event = "IVR success";
+												else if (row.event === 'FA')
+													event = "IVR failure";
+												else
+													event = "Unknown event";
+												data += "<td>" + event + "</td>";
+												data += "<td>" + row.timeStamp + "</td>";
+												data += "<td>" + row.phoneNumber + "</td>";
+												data += "</tr>"
+											}
+											data += "</table><br>"
+											data += "<b>Location Data:</b><br><table><tr><td><b>Lat</b></td><td><b>Long</b></td><td><b>Speed</b></td><td><b>Altitude</b></td><td><b>Gps derived location?</b></td><td><b>Battery level (%)</b></td><td><b>Timestamp</b></td></tr>";
 
-				data += "<tr>";
-				data += "<td>" + row.latitude + "</td>";
-				data += "<td>" + row.longditude + "</td>";
-				data += "<td>" + row.speed + "</td>";
-				data += "<td>" + row.altitude + "</td>";
-				data += "<td>" + row.gpsDerivedLocation + "</td>";
-				data += "<td>" + row.batteryLevel + "</td>";
-				data += "<td>" + row.timeStamp + "</td>";
-				data += "</tr>"
-			}
-			data += "</table><br>"
-			
-		} else {
-			data += "Some error while getting history:"+error;
-		} 
+											for (var i = 0; i < locationData.length; i++)
+											{
+												var row = locationData[i];
+												console.log("Processing row %s", JSON.stringify(row));
 
-		res.send(data);
-	});
-});
+												data += "<tr>";
+												data += "<td>" + row.latitude + "</td>";
+												data += "<td>" + row.longditude + "</td>";
+												data += "<td>" + row.speed + "</td>";
+												data += "<td>" + row.altitude + "</td>";
+												data += "<td>" + row.gpsDerivedLocation + "</td>";
+												data += "<td>" + row.batteryLevel + "</td>";
+												data += "<td>" + row.timeStamp + "</td>";
+												data += "</tr>"
+											}
+											data += "</table><br>"
+
+										} else
+										{
+											data += "Some error while getting history:" + error;
+										}
+
+										res.send(data);
+									});
+				});
 
 app.get('/users', user.list);
 

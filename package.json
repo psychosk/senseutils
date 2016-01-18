@@ -6,6 +6,7 @@
     "start": "nodemon mobileWebServer.js"
   },
   "dependencies": {
+    "body-parser": "^1.14.2",
     "express": "3.2.6",
     "form-builder": "0.0.1",
     "forms": "^1.1.4",
