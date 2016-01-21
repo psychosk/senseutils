@@ -178,13 +178,13 @@ app.post('/user/registerUser', function(req, res)
 							} else if (row.type === 'camera')
 							{
 								cameras.push(row.deviceID);
-							} else if (row.type === 'PA')
+							} else if (row.type === 'panicbutton')
 							{
 								panicbuttons.push({
 									deviceID : row.deviceID,
 									gatewayID : row.linkedGatewayID
 								});
-							} else if (row.type === 'SM')
+							} else if (row.type === 'smartplug')
 							{
 								smartplugs.push({
 									deviceID : row.deviceID,
