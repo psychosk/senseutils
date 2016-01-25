@@ -165,30 +165,42 @@ app.post('/user/registerUser', function(req, res)
 						var smartplugs = [];
 
 						var params = JSON.parse(response.body);
+						console.log("GOT:%s", JSON.stringify(params));
 						for (var i = 0; i < params.length; i++)
 						{
 							var row = params[i];
 							console.log("Processing %s", JSON.stringify(row));
 							if (row.type === 'gateway')
 							{
-								gateways.push(row.deviceID);
+								gateways.push({
+									deviceID : row.deviceID,
+									gatewayName : row.name
+								});
 							} else if (row.type === 'tracker')
 							{
-								trackers.push(row.deviceID);
+								trackers.push({
+									deviceID : row.deviceID,
+									trackerName : row.name
+								});
 							} else if (row.type === 'camera')
 							{
-								cameras.push(row.deviceID);
+								cameras.push({
+									deviceID : row.deviceID,
+									cameraName : row.name
+								});
 							} else if (row.type === 'panicbutton')
 							{
 								panicbuttons.push({
 									deviceID : row.deviceID,
-									gatewayID : row.linkedGatewayID
+									gatewayID : row.linkedGatewayID,
+									deviceName : row.name
 								});
 							} else if (row.type === 'smartplug')
 							{
 								smartplugs.push({
 									deviceID : row.deviceID,
-									gatewayID : row.linkedGatewayID
+									gatewayID : row.linkedGatewayID,
+									deviceName : row.name
 								});
 							} else
 							{
@@ -200,7 +212,9 @@ app.post('/user/registerUser', function(req, res)
 
 						for (var i = 0; i < gateways.length; ++i)
 						{
-							data += "GatewayID:" + gateways[i] + "<a href=\"" + webserverIP + "configure/gateway/" + gateways[i] + "\">Configure</a><br>"
+							data += "GatewayName:" + gateways[i].gatewayName + ",GatewayID:" + gateways[i].deviceID + "<a href=\"" + webserverIP + "configure/gateway/" + gateways[i].deviceID
+									+ "\">Configure</a><br>"
+
 						}
 
 						data += "<b>Your linked panic buttons:</b><br>";
@@ -209,7 +223,8 @@ app.post('/user/registerUser', function(req, res)
 						{
 							var deviceID = panicbuttons[i].deviceID;
 							var gatewayID = panicbuttons[i].gatewayID;
-							data += "DeviceID:" + deviceID + "<a href=\"" + webserverIP + "configure/panicbutton/" + gatewayID + "/" + deviceID + "\">Configure</a>  "
+							var deviceName = panicbuttons[i].deviceName;
+							data += "DeviceName: " + deviceName + ",DeviceID:" + deviceID + "<a href=\"" + webserverIP + "configure/panicbutton/" + gatewayID + "/" + deviceID + "\">Configure</a>  "
 							data += "<a href=\"" + webserverIP + "info/panicbutton/" + gatewayID + "/" + deviceID + "\">Info</a><br>";
 						}
 
@@ -219,7 +234,8 @@ app.post('/user/registerUser', function(req, res)
 						{
 							var deviceID = smartplugs[i].deviceID;
 							var gatewayID = smartplugs[i].gatewayID;
-							data += "DeviceID:" + deviceID + "<a href=\"" + webserverIP + "configure/smartplug/" + gatewayID + "/" + deviceID + "\">Configure</a>  "
+							var deviceName = smartplugs[i].deviceName;
+							data += "DeviceName: " + deviceName + ",DeviceID:" + deviceID + "<a href=\"" + webserverIP + "configure/smartplug/" + gatewayID + "/" + deviceID + "\">Configure</a>  "
 							data += "<a href=\"" + webserverIP + "info/smartplug/" + gatewayID + "/" + deviceID + "\">Info</a>  ";
 							data += "<a href=\"" + webserverIP + "action/smartplug/" + gatewayID + "/" + deviceID + "/1\">Switch on</a>  ";
 							data += "<a href=\"" + webserverIP + "action/smartplug/" + gatewayID + "/" + deviceID + "/0\">Switch off</a><br>";
@@ -229,15 +245,17 @@ app.post('/user/registerUser', function(req, res)
 
 						for (var i = 0; i < cameras.length; ++i)
 						{
-							data += "CameraID:" + cameras[i] + "<a href=\"" + webserverIP + "configure/camera/" + cameras[i] + "\">Configure</a><br>"
+							data += "Name :" + cameras[i].cameraName + ", CameraID:" + cameras[i].deviceID + "<a href=\"" + webserverIP + "configure/camera/" + cameras[i].cameraID
+									+ "\">Configure</a><br>"
 						}
 
 						data += "<b>Your linked trackers:</b><br>";
 
 						for (var i = 0; i < trackers.length; ++i)
 						{
-							data += "TrackerID:" + trackers[i] + "<a href=\"" + webserverIP + "configure/tracker/" + trackers[i] + "\">Configure</a>";
-							data += "  <a href=\"" + webserverIP + "info/tracker/" + trackers[i] + "\">Info</a>";
+							data += "Name :" + trackers[i].trackerName + ",TrackerID:" + trackers[i].deviceID + "<a href=\"" + webserverIP + "configure/tracker/" + trackers[i].deviceID
+									+ "\">Configure</a>";
+							data += "  <a href=\"" + webserverIP + "info/tracker/" + trackers[i].deviceID + "\">Info</a>";
 							data += "<br>";
 
 						}
@@ -275,14 +293,16 @@ app.post('/configure/gateway/modifysettings/:gatewayID', function(req, res)
 	var gatewayID = req.params.gatewayID;
 	var ssid = req.body.ssid;
 	var password = req.body.password;
+	var name = req.body.name;
 
-	console.log("Setting gateway to %s,%s", ssid, password);
+	console.log("Setting gateway to %s,%s,%s", ssid, password, name);
 	var settingsURL = appEngineIP + "gateway/settings/" + gatewayID;
 	request.post({
 		url : settingsURL,
 		form : {
 			ssid : ssid,
-			password : password
+			password : password,
+			name : name
 		},
 		headers : {
 			token : self.userToken,
@@ -320,7 +340,9 @@ app.get('/configure/gateway/:gatewayID', function(req, res)
 		{
 
 			var params = JSON.parse(body);
-			var data = "WIFI SSID:" + params.SSID + ",WIFI PASS:" + params.KEY + "<br>";
+			console.log(JSON.stringify(params));
+
+			var data = "NAME:" + params.name + ",WIFI SSID:" + params.SSID + ",WIFI PASS:" + params.KEY + "<br>";
 
 			var Form = require('form-builder').Form;
 
@@ -333,7 +355,10 @@ app.get('/configure/gateway/:gatewayID', function(req, res)
 			data += myForm.open(); // will return: <form action="/signup"
 			// class="myform-class">
 
-			data += "SSID:";
+			data += "Name:";
+			data += myForm.text().attr('name', 'name').render();
+
+			data += "<br>SSID:";
 
 			// add the first field and renders it
 			data += myForm.text().attr('name', 'ssid').render();
@@ -341,6 +366,7 @@ app.get('/configure/gateway/:gatewayID', function(req, res)
 
 			// add the last name field and renders it
 			data += myForm.text().attr('name', 'password').render();
+
 			data += "<br>";
 
 			data += myForm.submit().attr('value', 'change').render();
@@ -408,6 +434,36 @@ app.get('/info/panicbutton/:gatewayID/:deviceID', function(req, res)
 	});
 });
 
+app.post('/configure/smartplug/settings/:gatewayID/:deviceID', function(req, res)
+{
+	var gatewayID = req.params.gatewayID;
+	var deviceID = req.params.deviceID;
+
+	var name = req.body.name;
+
+	console.log("Setting smart plug configuration details to %s", JSON.stringify(req.body));
+	var settingsURL = appEngineIP + "smartPlug/settings/" + gatewayID + "/" + deviceID;
+	request.post({
+		url : settingsURL,
+		form : {
+			name : name,
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		if (response.statusCode == 200)
+		{
+			res.send("Configuration set successfully, now go back and refresh!");
+		} else
+		{
+			res.send("Error setting configuration:%s", response.body);
+		}
+	});
+});
+
 app.post('/configure/panicbutton/settings/:gatewayID/:deviceID', function(req, res)
 {
 	var gatewayID = req.params.gatewayID;
@@ -420,6 +476,7 @@ app.post('/configure/panicbutton/settings/:gatewayID/:deviceID', function(req, r
 	var emergencyContact5 = req.body.emergencyContact5;
 	var adminNumber = req.body.adminNumber;
 	var callTimeout = req.body.callTimeout;
+	var name = req.body.name;
 
 	console.log("Setting panic button configuration details to %s", JSON.stringify(req.body));
 	var settingsURL = appEngineIP + "panicButton/settings/" + gatewayID + "/" + deviceID;
@@ -432,7 +489,8 @@ app.post('/configure/panicbutton/settings/:gatewayID/:deviceID', function(req, r
 			p4 : emergencyContact4,
 			p5 : emergencyContact5,
 			adminNumber : adminNumber,
-			callTimeout : callTimeout
+			callTimeout : callTimeout,
+			name : name,
 		},
 		headers : {
 			token : self.userToken,
@@ -445,7 +503,7 @@ app.post('/configure/panicbutton/settings/:gatewayID/:deviceID', function(req, r
 			res.send("Configuration set successfully!");
 		} else
 		{
-			res.send("Error setting configuration:%s", error);
+			res.send("Error setting configuration:%s", response.body);
 		}
 	});
 });
@@ -492,7 +550,8 @@ app.get('/configure/panicbutton/:gatewayID/:deviceID', function(req, res)
 
 			// opens the form
 			data += myForm.open();
-
+			data += "Name:";
+			data += myForm.text().attr('name', 'name').render() + "<br>";
 			data += "Emergency contact 1:";
 			data += myForm.text().attr('name', 'emergencyContact1').render() + "<br>";
 			data += "Emergency contact 2:";
@@ -532,7 +591,50 @@ app.get('/configure/smartplug/:gatewayID/:deviceID', function(req, res)
 {
 	var gatewayID = req.params.gatewayID;
 	var deviceID = req.params.deviceID;
-	res.send("No configuration options to set yet for smartplug!");
+
+	var settingsURL = appEngineIP + "smartplug/settings/" + gatewayID + "/" + deviceID;
+	console.log("Going to %s", settingsURL);
+	request.get({
+		url : settingsURL,
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		var data = "";
+		if (response.statusCode == 200)
+		{
+
+			var params = JSON.parse(body);
+			if (params.length == 0)
+			{
+				data += "No configuration yet<br>";
+			} else
+			{
+				data += JSON.stringify(params);
+			}
+
+			var Form = require('form-builder').Form;
+
+			var myForm = Form.create({
+				action : webserverIP + "configure/smartplug/settings/" + gatewayID + "/" + deviceID,
+				method : 'post'
+			});
+
+			// opens the form
+			data += myForm.open();
+			data += "Name:";
+			data += myForm.text().attr('name', 'name').render() + "<br>";
+
+			data += myForm.submit().attr('value', 'change').render();
+
+		} else
+		{
+			data += body.error;
+		}
+		res.send(data);
+	});
 });
 
 app.get('/action/smartplug/:gatewayID/:deviceID/:action', function(req, res)
