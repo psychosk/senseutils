@@ -14,13 +14,16 @@ app.set('port', process.env.PORT || 4000);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 app.use(express.favicon());
-app.use(express.logger('dev'));
 app.use(express.bodyParser());
 app.use(express.methodOverride());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
 
-var logdir = "/var/tmp/hubEngine.log"
+var logdir = "/var/tmp/mws.log"
+
+app.use(logger({
+	path : logdir
+}));
 
 var webserverIP = "http://hub.smartsense.co.in:4000/";
 var hubEngineIP = "http://hub.smartsense.co.in:80/";
