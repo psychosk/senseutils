@@ -6,6 +6,7 @@ var express = require('express'), routes = require('./routes'), user = require('
 var forms = require('forms');
 var request = require('request');
 var util = require('util');
+var logger = require('express-logger');
 // var bodyParser = require('body-parser');
 var app = express();
 
