@@ -293,7 +293,7 @@ function startPrompt(gatewayID)
 				for (var i = 0; i < params.length; i++)
 				{
 					var row = params[i];
-					if (row.type === 'PA' && gatewayID == row.linkedGatewayID)
+					if (row.type === 'panicbutton' && gatewayID == row.linkedGatewayID)
 					{
 						console.log("panicButtonID:%s", row.deviceID);
 					}
@@ -459,7 +459,7 @@ function startPrompt(gatewayID)
 				for (var i = 0; i < params.length; i++)
 				{
 					var row = params[i];
-					if (row.type === 'SM' && gatewayID == row.linkedGatewayID)
+					if (row.type === 'smartplug' && gatewayID == row.linkedGatewayID)
 					{
 						console.log("smartPlugID:%s", row.deviceID);
 					}
