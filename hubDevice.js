@@ -522,6 +522,7 @@ function registerZigbeeDevice(gatewayID, zigbeeRadioID, type, callback)
 
 	console.log("Executing POST:%s and token is %s", url, self.token);
 
+	
 	request.post({
 		url : url,
 		headers : {
