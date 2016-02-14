@@ -21,7 +21,8 @@ if (process.env.NODE_ENV === 'dev')
 }
 
 var initURL = "http://" + trackerEngineIP + "tracker/register";
-var registerURL = "http://" + trackerEngineIP + "tracker/register/user/IMEI/USERID".replace(/USERID/, userID).replace(/IMEI/, IMEI);
+var registerURL = "http://" + trackerEngineIP + "tracker/register/user";
+var loginURL = "http://" + trackerEngineIP + "tracker/login";
 var dataURL = "http://" + trackerEngineIP + "tracker/data";
 
 console.log("Tracker registering with cloud....");
@@ -31,9 +32,9 @@ console.log("Executing POST:%s", initURL);
 request.post({
 	url : initURL,
 	form : {
-		imei : IMEI,
-		phoneNumber : phoneNumber,
-		activated : 'false'
+		imei : IMEI
+	// phoneNumber : phoneNumber,
+	// activated : 'false'
 	}
 }, function(error, response, body)
 {
@@ -42,7 +43,17 @@ request.post({
 		var responseParams = JSON.parse(body);
 		console.log("Initialization accepted, registering this tracker with userID:%s on URL:%s", userID, registerURL);
 
-		request.post(registerURL, function(error, response, body)
+		request.post({
+			url : registerURL,
+			form : {
+				phoneNumber : phoneNumber,
+				imei : IMEI
+
+			},
+			headers : {
+				userID : userID
+			}
+		}, function(error, response, body)
 		{
 			if (!error && response.statusCode == 200)
 			{
@@ -53,18 +64,43 @@ request.post({
 
 				prompt.get([ 'TID' ], function(err, result)
 				{
-					startPrompt(result.TID);
+					request.post({
+						url : loginURL,
+						form : {
+							TID : result.TID
+						}
+					}, function(error, response, body)
+					{
+						if (!error && response.statusCode == 200)
+						{
+							//var responseParams = JSON.parse(response.body);
+							console.log("Login successful!");
+							startPrompt(result.TID);
+						} else
+						{
+							console.log("Login didn't work");
+							console.log("ERROR:%s", error);
+							console.log("STATUSCODE:%s", response && response.statusCode);
+							console.log("BODY:%s", response.body && response.body);
+						}
+					});
 				});
+
 			} else
 			{
-				console.log("STATUSCODE:%s", response.statusCode);
+				console.log("Registration didn't work");
+				console.log("ERROR:%s", error);
+				console.log("STATUSCODE:%s", response && response.statusCode);
+				console.log("BODY:%s", response.body && response.body);
 			}
 
 		});
 
 	} else
 	{
-		console.log("STATUSCODE:%s", response.statusCode);
+		console.log("ERROR:%s", error);
+		console.log("STATUSCODE:%s", response && response.statusCode);
+		console.log("BODY:%s", response.body && response.body);
 	}
 	;
 });

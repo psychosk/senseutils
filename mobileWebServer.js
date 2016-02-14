@@ -44,6 +44,7 @@ if (process.env.NODE_ENV === 'dev')
 	hubEngineIP = "http://localhost:7320/";
 	// trackerEngineIP = "http://localhost:7321/";
 	appEngineIP = "http://localhost:7322/";
+	appWSEngineIP = "http://localhost:7323/"
 	app.use(express.errorHandler());
 }
 
@@ -170,6 +171,9 @@ app.post('/user/registerUser', function(req, res)
 
 						var params = JSON.parse(response.body);
 						console.log("GOT:%s", JSON.stringify(params));
+						
+						
+						
 						for (var i = 0; i < params.length; i++)
 						{
 							var row = params[i];
@@ -928,3 +932,4 @@ http.createServer(app).listen(app.get('port'), function()
 {
 	console.log('Express server listening on port ' + app.get('port'));
 });
+
