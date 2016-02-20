@@ -152,7 +152,7 @@ function startPrompt(trackerID)
 				output : process.stdout
 			});
 
-			rl.question("Please type in location:LAT,LONG,SPEED,ALTI,isLocationGPSDerived(0 or 1),BLV(battery level ie 40)\n", function(answer)
+			rl.question("Please type in location:LAT,LONG,SPEED,ALTI,isLocationGPSDerived(0 or 1),BLV(battery level ie 345)\n", function(answer)
 			{
 				rl.close();
 				var params = answer.split(",");
@@ -161,16 +161,18 @@ function startPrompt(trackerID)
 					gpsDerived = "2";// implies GPS
 
 				var opts = {
-					OPS : "A",
+
+					
 					TID : trackerID,
-					DATETIME : getDate(),
-					LAT : params[0],
-					LON : params[1],
-					Speed : params[2],
-					Alti : params[3],
-					NET : gpsDerived,
-					BLV : params[5],
-					ALERT : "MSG"
+					LatLng : params[0] +","+params[1],
+					SpeedAlti : params[2] + "," + params[3],
+					DateTime : getDate(),
+					ALERT : "REG",
+					Battery : params[5],
+					Ops : "A",
+					Net : gpsDerived,
+
+					
 				};
 
 				console.log("Registering location update with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));

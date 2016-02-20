@@ -187,7 +187,7 @@ function handleMessageFromEngine(data, flags)
 		}));
 	} else if (command === "/gateway/heartbeat")
 	{
-		console.log("Acking heartbeat for gatewayID:%s,requestID:%d", gatewayID, requestID);
+		console.log("NOT Acking heartbeat for gatewayID:%s,requestID:%d", gatewayID, requestID);
 		process.emit('sendDataToCloud', JSON.stringify({
 			'status' : 'OK',
 			'requestID' : requestID
@@ -474,7 +474,7 @@ function startPrompt(gatewayID)
 						{
 							var request2 = require('request');
 							// /panicButton/buttonPress/gatewayID/deviceID/timeStamp
-							var url = "http://" + hubEngineIP + "smartPlug/manualAction/" + deviceID + "/" + result.action + "/" + getDate();
+							var url = "http://" + hubEngineIP + "smartPlug/manualAction/" +gatewayID + "/" + deviceID + "/" + result.action + "/" + getDate();
 							console.log("Executing POST:%s", url)
 							request2.post({
 								url : url,
