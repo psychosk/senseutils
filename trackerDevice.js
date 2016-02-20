@@ -124,9 +124,9 @@ function startPrompt(trackerID)
 		{
 			var opts = {
 				ALERT : "SOS",
-				OPS : "M",
+				Ops : "M",
 				TID : trackerID,
-				DATETIME : getDate()
+				DateTime : getDate()
 			};
 			console.log("Registering panic button press with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
 			request.post({
