@@ -30,6 +30,7 @@ var webserverIP = "http://hub.smartsense.co.in:4000/";
 var hubEngineIP = "http://hub.smartsense.co.in:80/";
 var trackerEngineIP = "http://tracker.smartsense.co.in:80/";
 var appEngineIP = "http://app.smartsense.co.in:80/";
+var appWSEngineIP = "ws://app.smartsense.co.in:81/"
 
 var sessionData = {};
 
@@ -44,7 +45,7 @@ if (process.env.NODE_ENV === 'dev')
 	hubEngineIP = "http://localhost:7320/";
 	// trackerEngineIP = "http://localhost:7321/";
 	appEngineIP = "http://localhost:7322/";
-	appWSEngineIP = "http://localhost:7323/"
+	appWSEngineIP = "ws://localhost:7323/"
 	app.use(express.errorHandler());
 }
 
@@ -216,6 +217,21 @@ app.post('/user/registerUser', function(req, res)
 							}
 						}
 
+						data += "<html><head>";
+						
+						data += "" + 
+						 "<script>" + 
+					      "function updateMessage(message) {" + 
+					        " document.getElementById('messages').innerHTML = message;" +  
+					      "}" +  
+					      " var ws = new WebSocket('" + appWSEngineIP + "?userID=" + self.userID + "&token=" + self.userToken + "'); " + 
+					      " ws.onmessage = function (event) { " + 
+					        " updateMessage(event.data); " + 
+					      " }; " + 
+					    " </script></head><body>" ;
+						
+						data += "<strong>Messages:</strong><div id='messages'></div><br>";
+						
 						data += "<b>Your linked gateways:</b><br>";
 
 						for (var i = 0; i < gateways.length; ++i)
@@ -275,6 +291,8 @@ app.post('/user/registerUser', function(req, res)
 						data += util.format("STATUSCODE:%s", response && response.statusCode);
 						data += util.format("BODY:%s", body);
 					}
+					data += "</body></html>";
+					
 					res.send(data);
 
 				});
