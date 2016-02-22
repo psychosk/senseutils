@@ -8,6 +8,7 @@
   "dependencies": {
     "body-parser": "^1.14.2",
     "express": "3.2.6",
+    "express-logger": "0.0.3",
     "form-builder": "0.0.1",
     "forms": "^1.1.4",
     "forms-generator": "^1.0.4",
