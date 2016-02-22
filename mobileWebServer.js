@@ -43,7 +43,7 @@ if (process.env.NODE_ENV === 'dev')
 	console.log("Using dev environment!");
 	webserverIP = "http://localhost:4000/";
 	hubEngineIP = "http://localhost:7320/";
-	// trackerEngineIP = "http://localhost:7321/";
+	trackerEngineIP = "http://localhost:7326/";
 	appEngineIP = "http://localhost:7322/";
 	appWSEngineIP = "ws://localhost:7323/"
 	app.use(express.errorHandler());
@@ -172,9 +172,7 @@ app.post('/user/registerUser', function(req, res)
 
 						var params = JSON.parse(response.body);
 						console.log("GOT:%s", JSON.stringify(params));
-						
-						
-						
+
 						for (var i = 0; i < params.length; i++)
 						{
 							var row = params[i];
@@ -218,20 +216,13 @@ app.post('/user/registerUser', function(req, res)
 						}
 
 						data += "<html><head>";
-						
-						data += "" + 
-						 "<script>" + 
-					      "function updateMessage(message) {" + 
-					        " document.getElementById('messages').innerHTML = message;" +  
-					      "}" +  
-					      " var ws = new WebSocket('" + appWSEngineIP + "?userID=" + self.userID + "&token=" + self.userToken + "'); " + 
-					      " ws.onmessage = function (event) { " + 
-					        " updateMessage(event.data); " + 
-					      " }; " + 
-					    " </script></head><body>" ;
-						
+
+						data += "" + "<script>" + "function updateMessage(message) {" + " document.getElementById('messages').innerHTML = message;" + "}" + " var ws = new WebSocket('" + appWSEngineIP
+								+ "?userID=" + self.userID + "&token=" + self.userToken + "'); " + " ws.onmessage = function (event) { " + " updateMessage(event.data); " + " }; "
+								+ " </script></head><body>";
+
 						data += "<strong>Messages:</strong><div id='messages'></div><br>";
-						
+
 						data += "<b>Your linked gateways:</b><br>";
 
 						for (var i = 0; i < gateways.length; ++i)
@@ -280,6 +271,9 @@ app.post('/user/registerUser', function(req, res)
 							data += "Name :" + trackers[i].trackerName + ",TrackerID:" + trackers[i].deviceID + "<a href=\"" + webserverIP + "configure/tracker/" + trackers[i].deviceID
 									+ "\">Configure</a>";
 							data += "  <a href=\"" + webserverIP + "info/tracker/" + trackers[i].deviceID + "\">Info</a>";
+							data += "  <a href=\"" + webserverIP + "livetracking/tracker/" + trackers[i].deviceID + "/1\">Start live tracking</a>";
+							data += "  <a href=\"" + webserverIP + "livetracking/tracker/" + trackers[i].deviceID + "/0\">Stop live tracking</a>";
+							data += "  <a href=\"" + webserverIP + "stopsos/tracker/" + trackers[i].deviceID + "\">Stop SOS mode</a>";
 							data += "<br>";
 
 						}
@@ -292,7 +286,7 @@ app.post('/user/registerUser', function(req, res)
 						data += util.format("BODY:%s", body);
 					}
 					data += "</body></html>";
-					
+
 					res.send(data);
 
 				});
@@ -681,10 +675,10 @@ app.get('/action/smartplug/:gatewayID/:deviceID/:action', function(req, res)
 	{
 		if (error)
 		{
-			res.send(400, "Smart plug action error:" + error);
+			res.status(400).send("Smart plug action error:" + error);
 		} else if (response.statusCode != 200)
 		{
-			res.send(response.statusCode);
+			res.send(util.format("Response status code : %s, body : %s", response.statusCode, body));
 		} else
 		{
 			res.send("Smart plug action accepted!");
@@ -866,6 +860,63 @@ app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 	});
 });
 
+app.get('/livetracking/tracker/:userTrackerPairID/:action', function(req, res)
+{
+	var url = appEngineIP + "tracker/liveTracking";
+	console.log("Going to %s", url);
+	request.post({
+		url : url,
+		form : {
+			TID : req.params.userTrackerPairID,
+			action : req.params.action
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		if (error)
+		{
+			res.status(400).send("Tracker live tracking error:" + error);
+		} else if (response.statusCode != 200)
+		{
+			res.send(util.format("Response status code : %s, body : %s", response.statusCode, body));
+		} else
+		{
+			res.send("Tracker action accepted!");
+		}
+	});
+});
+
+app.get('/stopsos/tracker/:userTrackerPairID', function(req, res)
+		{
+			var url = appEngineIP + "tracker/stopSOS";
+			console.log("Going to %s", url);
+			request.post({
+				url : url,
+				form : {
+					TID : req.params.userTrackerPairID
+				},
+				headers : {
+					token : self.userToken,
+					userid : self.userID
+				}
+			}, function(error, response, body)
+			{
+				if (error)
+				{
+					res.status(400).send("Tracker stop SOS error:" + error);
+				} else if (response.statusCode != 200)
+				{
+					res.send(util.format("Response status code : %s, body : %s", response.statusCode, body));
+				} else
+				{
+					res.send("Tracker stop SOS accepted!");
+				}
+			});
+		});
+
 /**
  * get the info from the server
  */
@@ -950,4 +1001,3 @@ http.createServer(app).listen(app.get('port'), function()
 {
 	console.log('Express server listening on port ' + app.get('port'));
 });
-
