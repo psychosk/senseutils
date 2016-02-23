@@ -217,11 +217,11 @@ app.post('/user/registerUser', function(req, res)
 
 						data += "<html><head>";
 
-						data += "" + "<script>" + "function updateMessage(message) {" + " document.getElementById('messages').innerHTML = message;" + "}" + " var ws = new WebSocket('" + appWSEngineIP
+						data += "" + "<script>" + "var messages = []; function updateMessage(message) {" + " messages.push(message); document.getElementById('messages').innerHTML = messages.toString() ;" + "}" + " var ws = new WebSocket('" + appWSEngineIP
 								+ "?userID=" + self.userID + "&token=" + self.userToken + "'); " + " ws.onmessage = function (event) { " + " updateMessage(event.data); " + " }; "
 								+ " </script></head><body>";
 
-						data += "<strong>Messages:</strong><div id='messages'></div><br>";
+						data += "<strong>Messages (available only on this screen): </strong><div id='messages'></div><br>";
 
 						data += "<b>Your linked gateways:</b><br>";
 
