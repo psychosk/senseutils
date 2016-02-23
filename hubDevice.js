@@ -187,7 +187,7 @@ function handleMessageFromEngine(data, flags)
 		}));
 	} else if (command === "/gateway/heartbeat")
 	{
-		console.log("NOT Acking heartbeat for gatewayID:%s,requestID:%d", gatewayID, requestID);
+		console.log("Acking heartbeat for gatewayID:%s,requestID:%d", gatewayID, requestID);
 		process.emit('sendDataToCloud', JSON.stringify({
 			'status' : 'OK',
 			'requestID' : requestID
