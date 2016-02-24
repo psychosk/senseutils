@@ -240,7 +240,8 @@ app.post('/user/registerUser', function(req, res)
 							var gatewayID = panicbuttons[i].gatewayID;
 							var deviceName = panicbuttons[i].deviceName;
 							data += "DeviceName: " + deviceName + ",DeviceID:" + deviceID + "<a href=\"" + webserverIP + "configure/panicbutton/" + gatewayID + "/" + deviceID + "\">Configure</a>  "
-							data += "<a href=\"" + webserverIP + "info/panicbutton/" + gatewayID + "/" + deviceID + "\">Info</a><br>";
+							data += "<a href=\"" + webserverIP + "info/panicbutton/" + gatewayID + "/" + deviceID + "\"> Info</a>";
+							data += "<a href=\"" + webserverIP + "delete/device/" + gatewayID + "/" + deviceID + "\"> Delete</a><br>";
 						}
 
 						data += "<b>Your linked smart plugs:</b><br>";
@@ -252,8 +253,10 @@ app.post('/user/registerUser', function(req, res)
 							var deviceName = smartplugs[i].deviceName;
 							data += "DeviceName: " + deviceName + ",DeviceID:" + deviceID + "<a href=\"" + webserverIP + "configure/smartplug/" + gatewayID + "/" + deviceID + "\">Configure</a>  "
 							data += "<a href=\"" + webserverIP + "info/smartplug/" + gatewayID + "/" + deviceID + "\">Info</a>  ";
-							data += "<a href=\"" + webserverIP + "action/smartplug/" + gatewayID + "/" + deviceID + "/1\">Switch on</a>  ";
-							data += "<a href=\"" + webserverIP + "action/smartplug/" + gatewayID + "/" + deviceID + "/0\">Switch off</a><br>";
+							data += "<a href=\"" + webserverIP + "action/smartplug/" + gatewayID + "/" + deviceID + "/1\"> Switch on</a>  ";
+							data += "<a href=\"" + webserverIP + "action/smartplug/" + gatewayID + "/" + deviceID + "/0\"> Switch off</a>"
+							data += "<a href=\"" + webserverIP + "delete/device/" + gatewayID + "/" + deviceID + "\"> Delete</a><br>";
+						
 						}
 
 						data += "<b>Your linked cameras</b>:<br>";
@@ -483,6 +486,31 @@ app.post('/configure/smartplug/settings/:gatewayID/:deviceID', function(req, res
 		}
 	});
 });
+
+app.get('/delete/device/:gatewayID/:deviceID', function(req, res)
+		{
+			var gatewayID = req.params.gatewayID;
+			var deviceID = req.params.deviceID;
+
+			console.log("Delete device BODY %s", JSON.stringify(req.body));
+			var settingsURL = appEngineIP + "gateway/deleteDevice/" + gatewayID + "/" + deviceID;
+			request.del({
+				url : settingsURL,
+				headers : {
+					token : self.userToken,
+					userid : self.userID
+				}
+			}, function(error, response, body)
+			{
+				if (response.statusCode == 200)
+				{
+					res.send("Device deleted successfully!");
+				} else
+				{
+					res.send("Error deleting device:%s", response.body);
+				}
+			});
+		});
 
 app.post('/configure/panicbutton/settings/:gatewayID/:deviceID', function(req, res)
 {
