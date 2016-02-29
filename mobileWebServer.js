@@ -1,7 +1,6 @@
 /**
  * Module dependencies.
  */
-
 var express = require('express'), routes = require('./routes'), user = require('./routes/user'), http = require('http'), path = require('path');
 var forms = require('forms');
 var request = require('request');
@@ -9,6 +8,8 @@ var util = require('util');
 var logger = require('express-logger');
 // var bodyParser = require('body-parser');
 var app = express();
+
+process.env.TZ = 'Asia/Colombo';
 
 // all environments
 app.set('port', process.env.PORT || 4000);
@@ -135,7 +136,8 @@ app.post('/user/registerUser', function(req, res)
 			url : loginURL,
 			form : {
 				email : emailID,
-				password : password
+				password : password,
+				appDeviceID : "a2bba98f-01db-43c9-b4bf-e7120a0f5af8"
 			}
 		}, function(error, response, body)
 		{

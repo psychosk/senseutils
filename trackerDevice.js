@@ -38,9 +38,10 @@ request.post({
 	}
 }, function(error, response, body)
 {
+
 	if (!error && response.statusCode == 200)
 	{
-		var responseParams = JSON.parse(body);
+		//var responseParams = JSON.parse(body);
 		console.log("Initialization accepted, registering this tracker with userID:%s on URL:%s", userID, registerURL);
 
 		request.post({
@@ -73,7 +74,7 @@ request.post({
 					{
 						if (!error && response.statusCode == 200)
 						{
-							//var responseParams = JSON.parse(response.body);
+							// var responseParams = JSON.parse(response.body);
 							console.log("Login successful!");
 							startPrompt(result.TID);
 						} else
@@ -162,9 +163,8 @@ function startPrompt(trackerID)
 
 				var opts = {
 
-					
 					TID : trackerID,
-					LatLng : params[0] +","+params[1],
+					LatLng : params[0] + "," + params[1],
 					SpeedAlti : params[2] + "," + params[3],
 					DateTime : getDate(),
 					ALERT : "REG",
@@ -172,7 +172,6 @@ function startPrompt(trackerID)
 					Ops : "A",
 					Net : gpsDerived,
 
-					
 				};
 
 				console.log("Registering location update with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
