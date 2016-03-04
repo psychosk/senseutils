@@ -219,9 +219,9 @@ app.post('/user/registerUser', function(req, res)
 
 						data += "<html><head>";
 
-						data += "" + "<script>" + "var messages = []; function updateMessage(message) {" + " messages.push(message); document.getElementById('messages').innerHTML = messages.toString() ;" + "}" + " var ws = new WebSocket('" + appWSEngineIP
-								+ "?userID=" + self.userID + "&token=" + self.userToken + "'); " + " ws.onmessage = function (event) { " + " updateMessage(event.data); " + " }; "
-								+ " </script></head><body>";
+						data += "" + "<script>" + "var messages = []; function updateMessage(message) {"
+								+ " messages.push(message); document.getElementById('messages').innerHTML = messages.toString() ;" + "}" + " var ws = new WebSocket('" + appWSEngineIP + "?userID="
+								+ self.userID + "&token=" + self.userToken + "'); " + " ws.onmessage = function (event) { " + " updateMessage(event.data); " + " }; " + " </script></head><body>";
 
 						data += "<strong>Messages (available only on this screen): </strong><div id='messages'></div><br>";
 
@@ -258,7 +258,7 @@ app.post('/user/registerUser', function(req, res)
 							data += "<a href=\"" + webserverIP + "action/smartplug/" + gatewayID + "/" + deviceID + "/1\"> Switch on</a>  ";
 							data += "<a href=\"" + webserverIP + "action/smartplug/" + gatewayID + "/" + deviceID + "/0\"> Switch off</a>"
 							data += "<a href=\"" + webserverIP + "delete/device/" + gatewayID + "/" + deviceID + "\"> Delete</a><br>";
-						
+
 						}
 
 						data += "<b>Your linked cameras</b>:<br>";
@@ -275,7 +275,8 @@ app.post('/user/registerUser', function(req, res)
 						{
 							data += "Name :" + trackers[i].trackerName + ",TrackerID:" + trackers[i].deviceID + "<a href=\"" + webserverIP + "configure/tracker/" + trackers[i].deviceID
 									+ "\">Configure</a>";
-							data += "  <a href=\"" + webserverIP + "info/tracker/" + trackers[i].deviceID + "\">Info</a>";
+							data += "  <a href=\"" + webserverIP + "location/tracker/" + trackers[i].deviceID + "\">Location data</a>";
+							data += "  <a href=\"" + webserverIP + "event/tracker/" + trackers[i].deviceID + "\">Event data</a>";
 							data += "  <a href=\"" + webserverIP + "livetracking/tracker/" + trackers[i].deviceID + "/1\">Start live tracking</a>";
 							data += "  <a href=\"" + webserverIP + "livetracking/tracker/" + trackers[i].deviceID + "/0\">Stop live tracking</a>";
 							data += "  <a href=\"" + webserverIP + "stopsos/tracker/" + trackers[i].deviceID + "\">Stop SOS mode</a>";
@@ -490,29 +491,29 @@ app.post('/configure/smartplug/settings/:gatewayID/:deviceID', function(req, res
 });
 
 app.get('/delete/device/:gatewayID/:deviceID', function(req, res)
-		{
-			var gatewayID = req.params.gatewayID;
-			var deviceID = req.params.deviceID;
+{
+	var gatewayID = req.params.gatewayID;
+	var deviceID = req.params.deviceID;
 
-			console.log("Delete device BODY %s", JSON.stringify(req.body));
-			var settingsURL = appEngineIP + "gateway/deleteDevice/" + gatewayID + "/" + deviceID;
-			request.del({
-				url : settingsURL,
-				headers : {
-					token : self.userToken,
-					userid : self.userID
-				}
-			}, function(error, response, body)
-			{
-				if (response.statusCode == 200)
-				{
-					res.send("Device deleted successfully!");
-				} else
-				{
-					res.send("Error deleting device:%s", response.body);
-				}
-			});
-		});
+	console.log("Delete device BODY %s", JSON.stringify(req.body));
+	var settingsURL = appEngineIP + "gateway/deleteDevice/" + gatewayID + "/" + deviceID;
+	request.del({
+		url : settingsURL,
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		if (response.statusCode == 200)
+		{
+			res.send("Device deleted successfully!");
+		} else
+		{
+			res.send("Error deleting device:%s", response.body);
+		}
+	});
+});
 
 app.post('/configure/panicbutton/settings/:gatewayID/:deviceID', function(req, res)
 {
@@ -920,84 +921,116 @@ app.get('/livetracking/tracker/:userTrackerPairID/:action', function(req, res)
 });
 
 app.get('/stopsos/tracker/:userTrackerPairID', function(req, res)
+{
+	var url = appEngineIP + "tracker/stopSOS";
+	console.log("Going to %s", url);
+	request.post({
+		url : url,
+		form : {
+			TID : req.params.userTrackerPairID
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		if (error)
 		{
-			var url = appEngineIP + "tracker/stopSOS";
-			console.log("Going to %s", url);
-			request.post({
-				url : url,
-				form : {
-					TID : req.params.userTrackerPairID
-				},
-				headers : {
-					token : self.userToken,
-					userid : self.userID
-				}
-			}, function(error, response, body)
+			res.status(400).send("Tracker stop SOS error:" + error);
+		} else if (response.statusCode != 200)
+		{
+			res.send(util.format("Response status code : %s, body : %s", response.statusCode, body));
+		} else
+		{
+			res.send("Tracker stop SOS accepted!");
+		}
+	});
+});
+
+app.get('/event/tracker/:userTrackerPairID', function(req, res)
+{
+	var userTrackerPairID = req.params.userTrackerPairID;
+	var settingsURL = appEngineIP + "tracker/events/" + userTrackerPairID;
+	var request = require('request');
+	var data = "";
+	request.get({
+		url : settingsURL,
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		console.log("Response status code is :%s", response.statusCode);
+		if (error == null && response.statusCode == 200)
+		{
+			console.log("Processing event data!");
+			var eventData = JSON.parse(response.body);
+
+			data += "<b>Event Data:</b><br><table><tr><td><b>Event</b></td><td><b>Timestamp</b></td><td><b>Phone number</b></td></tr>";
+
+			for (var i = 0; i < eventData.length; i++)
 			{
-				if (error)
-				{
-					res.status(400).send("Tracker stop SOS error:" + error);
-				} else if (response.statusCode != 200)
-				{
-					res.send(util.format("Response status code : %s, body : %s", response.statusCode, body));
-				} else
-				{
-					res.send("Tracker stop SOS accepted!");
-				}
-			});
-		});
+				var row = eventData[i];
+				console.log("Processing row %s", JSON.stringify(row));
+
+				data += "<tr>";
+				var event = "";
+				if (row.event === 'PA')
+					event = "Panic button press";
+				else if (row.event === 'SU')
+					event = "IVR success";
+				else if (row.event === 'FA')
+					event = "IVR failure";
+				else
+					event = "Unknown event";
+				data += "<td>" + event + "</td>";
+				data += "<td>" + row.timeStamp + "</td>";
+				data += "<td>" + row.phoneNumber + "</td>";
+				data += "</tr>"
+			}
+			data += "</table><br>";
+			
+
+		} else
+		{
+			console.log(error);
+			console.log(response != undefined ? response.body : "body undefined!");
+		}
+		res.send(data);
+	});
+});
 
 /**
  * get the info from the server
  */
 app
 		.get(
-				'/info/tracker/:userTrackerPairID',
+				'/location/tracker/:userTrackerPairID',
 				function(req, res)
 				{
-
-					// gateway/settings/:gatewayID
-
 					var userTrackerPairID = req.params.userTrackerPairID;
-					var settingsURL = trackerEngineIP + "tracker/history/" + userTrackerPairID;
-					console.log("Going to %s", settingsURL);
+					var settingsURL = appEngineIP + "tracker/location/" + userTrackerPairID;
+					console.log("Going to %s with %s and %s", settingsURL, self.userToken, self.userID);
 					var data = "";
 					request
 							.get(
-									settingsURL,
+									{
+										url : settingsURL,
+										headers : {
+											token : self.userToken,
+											userid : self.userID
+										}
+									},
 									function(error, response, body)
 									{
 										console.log("Response status code is :%s", response.statusCode);
 										if (error == null && response.statusCode == 200)
 										{
-											var params = JSON.parse(response.body);
-											var eventData = params.event;
-											var locationData = params.location;
+											var locationData = JSON.parse(response.body);
 
-											data += "<b>Event Data:</b><br><table><tr><td><b>Event</b></td><td><b>Timestamp</b></td><td><b>Phone number</b></td></tr>";
-
-											for (var i = 0; i < eventData.length; i++)
-											{
-												var row = eventData[i];
-												console.log("Processing row %s", JSON.stringify(row));
-
-												data += "<tr>";
-												var event = "";
-												if (row.event === 'PA')
-													event = "Panic button press";
-												else if (row.event === 'SU')
-													event = "IVR success";
-												else if (row.event === 'FA')
-													event = "IVR failure";
-												else
-													event = "Unknown event";
-												data += "<td>" + event + "</td>";
-												data += "<td>" + row.timeStamp + "</td>";
-												data += "<td>" + row.phoneNumber + "</td>";
-												data += "</tr>"
-											}
-											data += "</table><br>"
-											data += "<b>Location Data:</b><br><table><tr><td><b>Lat</b></td><td><b>Long</b></td><td><b>Speed</b></td><td><b>Altitude</b></td><td><b>Gps derived location?</b></td><td><b>Battery level (%)</b></td><td><b>Timestamp</b></td></tr>";
+											data += "<html><body><b>Location Data:</b><br><table><tr><td><b>Lat</b></td><td><b>Long</b></td><td><b>Speed</b></td><td><b>Altitude</b></td><td><b>Gps derived location?</b></td><td><b>Battery level (%)</b></td><td><b>Timestamp</b></td></tr>";
 
 											for (var i = 0; i < locationData.length; i++)
 											{
@@ -1014,13 +1047,13 @@ app
 												data += "<td>" + row.timeStamp + "</td>";
 												data += "</tr>"
 											}
-											data += "</table><br>"
+											data += "</table>";
 
 										} else
 										{
-											data += "Some error while getting history:" + error;
+											console.log(error);
+											console.log(response != undefined ? response.body : "body undefined!");
 										}
-
 										res.send(data);
 									});
 				});
