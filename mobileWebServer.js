@@ -136,8 +136,7 @@ app.post('/user/registerUser', function(req, res)
 			url : loginURL,
 			form : {
 				email : emailID,
-				password : password,
-				appDeviceID : "a2bba98f-01db-43c9-b4bf-e7120a0f5af8"
+				password : password
 			}
 		}, function(error, response, body)
 		{
