@@ -885,7 +885,7 @@ app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 
 		} else
 		{
-			data += "Error:" + JSON.parse(body).error;
+			data += "Error:" + body;
 		}
 		res.send(data);
 	});
