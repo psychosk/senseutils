@@ -805,7 +805,7 @@ app.post('/configure/tracker/modifysettings/:userTrackerPairID', function(req, r
 			res.send("Configuration set successfully!");
 		} else
 		{
-			res.send("Error setting configuration:%s", error);
+			res.send("Error setting configuration:" + error);
 		}
 	});
 });
@@ -813,7 +813,7 @@ app.post('/configure/tracker/modifysettings/:userTrackerPairID', function(req, r
 app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 {
 	var userTrackerPairID = req.params.userTrackerPairID;
-	var settingsURL = trackerEngineIP + "tracker/settings/" + userTrackerPairID;
+	var settingsURL = appEngineIP + "tracker/settings/" + userTrackerPairID;
 	request.get(settingsURL, function(error, response, body)
 	{
 		var data = "";
