@@ -20,7 +20,6 @@ var hubEngineIP = "hub.smartsense.co.in:7320/";
 var hubEngineWSIP = "hub.smartsense.co.in:7321/";
 var appEngineIP = "app.smartsense.co.in:80/"
 
-
 if (process.env.NODE_ENV === 'dev')
 {
 	hubEngineIP = "localhost:7320/";
@@ -211,6 +210,14 @@ function handleMessageFromEngine(data, flags)
 			console.log("Switching smartPlugID:%s ON", deviceID);
 		else
 			console.log("Unknown action:%s", action);
+
+		process.emit('sendDataToCloud', JSON.stringify({
+			'status' : 'OK',
+			'requestID' : requestID
+		}));
+	} else if (command === '/gateway/permitjoin')
+	{
+		console.log("Permit join!!!!!!!!")
 
 		process.emit('sendDataToCloud', JSON.stringify({
 			'status' : 'OK',
@@ -474,7 +481,7 @@ function startPrompt(gatewayID)
 						{
 							var request2 = require('request');
 							// /panicButton/buttonPress/gatewayID/deviceID/timeStamp
-							var url = "http://" + hubEngineIP + "smartPlug/manualAction/" +gatewayID + "/" + deviceID + "/" + result.action + "/" + getDate();
+							var url = "http://" + hubEngineIP + "smartPlug/manualAction/" + gatewayID + "/" + deviceID + "/" + result.action + "/" + getDate();
 							console.log("Executing POST:%s", url)
 							request2.post({
 								url : url,
@@ -522,7 +529,6 @@ function registerZigbeeDevice(gatewayID, zigbeeRadioID, type, callback)
 
 	console.log("Executing POST:%s and token is %s", url, self.token);
 
-	
 	request.post({
 		url : url,
 		headers : {

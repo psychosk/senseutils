@@ -229,7 +229,9 @@ app.post('/user/registerUser', function(req, res)
 						for (var i = 0; i < gateways.length; ++i)
 						{
 							data += "GatewayName:" + gateways[i].gatewayName + ",GatewayID:" + gateways[i].deviceID + "<a href=\"" + webserverIP + "configure/gateway/" + gateways[i].deviceID
-									+ "\">Configure (note that the device MUST BE ONLINE for this to work)</a><br>"
+									+ "\">Configure (note that the device MUST BE ONLINE for this to work)</a>";
+							data += "<a href=\"" + webserverIP + "permitjoin/gateway/" + gateways[i].deviceID + "\"> Permit join </a>";
+							data += "<br>";
 
 						}
 
@@ -308,6 +310,36 @@ app.post('/user/registerUser', function(req, res)
 		});
 
 	}
+});
+
+/**
+ * Change settings of gateway
+ */
+app.get('/permitjoin/gateway/:gatewayID', function(req, res)
+{
+	var gatewayID = req.params.gatewayID;
+
+	var settingsURL = appEngineIP + "gateway/permitjoin";
+	request.post({
+		url : settingsURL,
+		form : {
+			gatewayID : gatewayID
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		if (response.statusCode == 200)
+		{
+			res.send("Permit join action complete, quick you have 60 seconds!");
+		} else
+		{
+			res.send(util.format("Status code:%s, error:%s", response.statusCode, body));
+		}
+	});
+
 });
 
 /**
