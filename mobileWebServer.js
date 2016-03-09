@@ -797,6 +797,10 @@ app.post('/configure/tracker/modifysettings/:userTrackerPairID', function(req, r
 			callTimeout : callTimeout,
 			heartbeat : heartbeat,
 			callInEnabled : callinEnabled
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
 		}
 	}, function(error, response, body)
 	{
@@ -814,7 +818,13 @@ app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 {
 	var userTrackerPairID = req.params.userTrackerPairID;
 	var settingsURL = appEngineIP + "tracker/settings/" + userTrackerPairID;
-	request.get(settingsURL, function(error, response, body)
+	request.get({
+		url : settingsURL,
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
 	{
 		var data = "";
 		if (response.statusCode == 200)
@@ -991,7 +1001,6 @@ app.get('/event/tracker/:userTrackerPairID', function(req, res)
 				data += "</tr>"
 			}
 			data += "</table><br>";
-			
 
 		} else
 		{
