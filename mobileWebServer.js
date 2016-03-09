@@ -230,7 +230,7 @@ app.post('/user/registerUser', function(req, res)
 						for (var i = 0; i < gateways.length; ++i)
 						{
 							data += "GatewayName:" + gateways[i].gatewayName + ",GatewayID:" + gateways[i].deviceID + "<a href=\"" + webserverIP + "configure/gateway/" + gateways[i].deviceID
-									+ "\">Configure</a><br>"
+									+ "\">Configure (note that the device MUST BE ONLINE for this to work)</a><br>"
 
 						}
 
@@ -784,7 +784,7 @@ app.post('/configure/tracker/modifysettings/:userTrackerPairID', function(req, r
 	var callinEnabled = req.body.callinEnabled;
 
 	console.log("Setting tracker configuration details to %s", JSON.stringify(req.body));
-	var settingsURL = trackerEngineIP + "tracker/settings/" + userTrackerPairID;
+	var settingsURL = appEngineIP + "tracker/settings/" + userTrackerPairID;
 	request.post({
 		url : settingsURL,
 		form : {
