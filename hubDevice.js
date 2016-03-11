@@ -20,7 +20,7 @@ var hubEngineIP = "hub.smartsense.co.in:7320/";
 var hubEngineWSIP = "hub.smartsense.co.in:7321/";
 var appEngineIP = "app.smartsense.co.in:80/"
 
-if (process.env.NODE_ENV === 'dev')
+if (process.env.NODE_ENV === 'dev' || process.env.USER === 'sid')
 {
 	hubEngineIP = "localhost:7320/";
 	hubEngineWSIP = "localhost:7321/";
@@ -255,7 +255,7 @@ function startPrompt(gatewayID)
 						console.log(err);
 					} else
 					{
-						console.log("Panic button registered with deviceID:%s", deviceID)
+						console.log("Panic button registered with deviceID:%s", deviceID);
 					}
 					startPrompt(gatewayID);
 				});
@@ -273,7 +273,7 @@ function startPrompt(gatewayID)
 						console.log(err);
 					} else
 					{
-						console.log("Smart plug successfully registered with deviceID:%s", deviceID)
+						console.log("Smart plug successfully registered with deviceID:%s", deviceID);
 					}
 					startPrompt(gatewayID);
 				});
@@ -555,7 +555,7 @@ function registerZigbeeDevice(gatewayID, zigbeeRadioID, type, callback)
 			}
 		} else
 		{
-			callback("STATUSCODE:" + response.statusCode);
+			callback("STATUSCODE:" + response.statusCode + ", BODY:"+body);
 		}
 		;
 	});

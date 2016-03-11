@@ -39,7 +39,7 @@ var sessionData = {};
 // var userID = null;
 var self = this;
 
-if (process.env.NODE_ENV === 'dev')
+if (process.env.NODE_ENV === 'dev' || process.env.USER === 'sid')
 {
 	console.log("Using dev environment!");
 	webserverIP = "http://localhost:4000/";
@@ -244,7 +244,7 @@ app.post('/user/registerUser', function(req, res)
 							var deviceName = panicbuttons[i].deviceName;
 							data += "DeviceName: " + deviceName + ",DeviceID:" + deviceID + "<a href=\"" + webserverIP + "configure/panicbutton/" + gatewayID + "/" + deviceID + "\">Configure</a>  "
 							data += "<a href=\"" + webserverIP + "info/panicbutton/" + gatewayID + "/" + deviceID + "\"> Info</a>";
-							data += "<a href=\"" + webserverIP + "delete/device/" + gatewayID + "/" + deviceID + "\"> Delete</a><br>";
+							data += "<a href=\"" + webserverIP + "delete/device/" + gatewayID + "/" + deviceID + "\"> Un-register</a><br>";
 						}
 
 						data += "<b>Your linked smart plugs:</b><br>";
@@ -258,7 +258,7 @@ app.post('/user/registerUser', function(req, res)
 							data += "<a href=\"" + webserverIP + "info/smartplug/" + gatewayID + "/" + deviceID + "\">Info</a>  ";
 							data += "<a href=\"" + webserverIP + "action/smartplug/" + gatewayID + "/" + deviceID + "/1\"> Switch on</a>  ";
 							data += "<a href=\"" + webserverIP + "action/smartplug/" + gatewayID + "/" + deviceID + "/0\"> Switch off</a>"
-							data += "<a href=\"" + webserverIP + "delete/device/" + gatewayID + "/" + deviceID + "\"> Delete</a><br>";
+							data += "<a href=\"" + webserverIP + "delete/device/" + gatewayID + "/" + deviceID + "\"> Un-register</a><br>";
 
 						}
 

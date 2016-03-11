@@ -17,7 +17,7 @@ if (IMEI == null || phoneNumber == null || email == null || password == null)
 
 var trackerEngineIP = "tracker.smartsense.co.in:80/";
 var appEngineIP = "app.smartsense.co.in:80/"
-if (process.env.NODE_ENV === 'dev')
+if (process.env.NODE_ENV === 'dev' || process.env.USER === 'sid')
 {
 	trackerEngineIP = "localhost:7326/";
 	appEngineIP = "localhost:7322/"
@@ -58,7 +58,7 @@ request.post({
 		{
 			if (!error && response.statusCode == 200)
 			{
-				console.log("Initialization accepted, TRACKER REGISTRATION with userID:%s on URL:%s with token:%s", self.userID, registerURL,self.userToken);
+				console.log("Initialization accepted, TRACKER REGISTRATION with userID:%s on URL:%s with token:%s", self.userID, registerURL, self.userToken);
 				request.post({
 					url : registerURL,
 					form : {
