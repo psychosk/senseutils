@@ -20,7 +20,7 @@ var hubEngineIP = "hub.smartsense.co.in:7320/";
 var hubEngineWSIP = "hub.smartsense.co.in:7321/";
 var appEngineIP = "app.smartsense.co.in:80/"
 
-if (process.env.NODE_ENV === 'dev' || process.env.USER === 'sid')
+if (process.env.NODE_ENV === 'dev')
 {
 	hubEngineIP = "localhost:7320/";
 	hubEngineWSIP = "localhost:7321/";

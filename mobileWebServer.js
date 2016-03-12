@@ -224,13 +224,14 @@ app.post('/user/registerUser', function(req, res)
 
 						data += "<strong>Messages (available only on this screen): </strong><div id='messages'></div><br>";
 
-						data += "<b>Your linked gateways:</b><br>";
+						data += "<b>Your linked gateways (note that the gateway must be connected in order for these commands to work):</b><br>";
 
 						for (var i = 0; i < gateways.length; ++i)
 						{
 							data += "GatewayName:" + gateways[i].gatewayName + ",GatewayID:" + gateways[i].deviceID + "<a href=\"" + webserverIP + "configure/gateway/" + gateways[i].deviceID
-									+ "\">Configure (note that the device MUST BE ONLINE for this to work)</a>";
+									+ "\">Configure</a>";
 							data += "<a href=\"" + webserverIP + "permitjoin/gateway/" + gateways[i].deviceID + "\"> Permit join </a>";
+							data += "<a href=\"" + webserverIP + "delete/gateway/" + gateways[i].deviceID + "\"> Unlink (unlinks all paired smartplugs/panicbuttons as well) </a>";
 							data += "<br>";
 
 						}
@@ -244,7 +245,7 @@ app.post('/user/registerUser', function(req, res)
 							var deviceName = panicbuttons[i].deviceName;
 							data += "DeviceName: " + deviceName + ",DeviceID:" + deviceID + "<a href=\"" + webserverIP + "configure/panicbutton/" + gatewayID + "/" + deviceID + "\">Configure</a>  "
 							data += "<a href=\"" + webserverIP + "info/panicbutton/" + gatewayID + "/" + deviceID + "\"> Info</a>";
-							data += "<a href=\"" + webserverIP + "delete/device/" + gatewayID + "/" + deviceID + "\"> Un-register</a><br>";
+							data += "<a href=\"" + webserverIP + "delete/device/" + gatewayID + "/" + deviceID + "\"> Unlink </a><br>";
 						}
 
 						data += "<b>Your linked smart plugs:</b><br>";
@@ -258,7 +259,7 @@ app.post('/user/registerUser', function(req, res)
 							data += "<a href=\"" + webserverIP + "info/smartplug/" + gatewayID + "/" + deviceID + "\">Info</a>  ";
 							data += "<a href=\"" + webserverIP + "action/smartplug/" + gatewayID + "/" + deviceID + "/1\"> Switch on</a>  ";
 							data += "<a href=\"" + webserverIP + "action/smartplug/" + gatewayID + "/" + deviceID + "/0\"> Switch off</a>"
-							data += "<a href=\"" + webserverIP + "delete/device/" + gatewayID + "/" + deviceID + "\"> Un-register</a><br>";
+							data += "<a href=\"" + webserverIP + "delete/device/" + gatewayID + "/" + deviceID + "\"> Unlink</a><br>";
 
 						}
 
@@ -310,6 +311,36 @@ app.post('/user/registerUser', function(req, res)
 		});
 
 	}
+});
+
+/**
+ * Change settings of gateway
+ */
+app.get('/delete/gateway/:gatewayID', function(req, res)
+{
+	var gatewayID = req.params.gatewayID;
+
+	var settingsURL = appEngineIP + "gateway/unlink";
+	request.del({
+		url : settingsURL,
+		json : {
+			gatewayID : gatewayID
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		if (response.statusCode == 200)
+		{
+			res.send("Unlink completed!");
+		} else
+		{
+			res.send(util.format("Status code:%s, error:%s", response.statusCode, body));
+		}
+	});
+
 });
 
 /**
@@ -466,7 +497,7 @@ app.get('/info/panicbutton/:gatewayID/:deviceID', function(req, res)
 			for (var i = 0; i < params.length; i++)
 			{
 				var row = params[i];
-				console.log("Processing row %s", JSON.stringify(row));
+				//console.log("Processing row %s", JSON.stringify(row));
 
 				data += "<tr>";
 				var event = "";
@@ -526,14 +557,19 @@ app.get('/delete/device/:gatewayID/:deviceID', function(req, res)
 	var gatewayID = req.params.gatewayID;
 	var deviceID = req.params.deviceID;
 
-	console.log("Delete device BODY %s", JSON.stringify(req.body));
-	var settingsURL = appEngineIP + "gateway/deleteDevice/" + gatewayID + "/" + deviceID;
+	//console.log("Delete device BODY %s", JSON.stringify(req.body));
+	var settingsURL = appEngineIP + "gateway/unlinkDevice";
 	request.del({
 		url : settingsURL,
 		headers : {
 			token : self.userToken,
 			userid : self.userID
+		},
+		json : {
+			gatewayID : gatewayID,
+			deviceID : deviceID
 		}
+
 	}, function(error, response, body)
 	{
 		if (response.statusCode == 200)
