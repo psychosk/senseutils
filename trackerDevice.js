@@ -17,7 +17,7 @@ if (IMEI == null || phoneNumber == null || email == null || password == null)
 
 var trackerEngineIP = "tracker.smartsense.co.in:80/";
 var appEngineIP = "app.smartsense.co.in:80/"
-if (process.env.NODE_ENV === 'dev' || process.env.USER === 'sid')
+if (process.env.NODE_ENV === 'dev')
 {
 	trackerEngineIP = "localhost:7326/";
 	appEngineIP = "localhost:7322/"
