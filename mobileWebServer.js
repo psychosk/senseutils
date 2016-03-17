@@ -150,7 +150,7 @@ app.post('/user/registerUser', function(req, res)
 					token : responseParams.token
 				};
 
-				console.log("Session data now looks like %s", JSON.stringify(sessionData));
+				//console.log("Session data now looks like %s", JSON.stringify(sessionData));
 
 				var getDevicesUrl = appEngineIP + "user/alldevices";
 				var request2 = require('request');
@@ -172,12 +172,12 @@ app.post('/user/registerUser', function(req, res)
 						var smartplugs = [];
 
 						var params = JSON.parse(response.body);
-						console.log("GOT:%s", JSON.stringify(params));
+						//console.log("GOT:%s", JSON.stringify(params));
 
 						for (var i = 0; i < params.length; i++)
 						{
 							var row = params[i];
-							console.log("Processing %s", JSON.stringify(row));
+							//console.log("Processing %s", JSON.stringify(row));
 							if (row.type === 'gateway')
 							{
 								gateways.push({

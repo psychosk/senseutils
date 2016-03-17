@@ -137,7 +137,7 @@ function getDate()
 function startPrompt(trackerID)
 {
 	console.log("your wish is my command....");
-	console.log("Allowable actions:panic,location");
+	console.log("Allowable actions:panic,location,ackStartLiveTrack,ackStopLiveTrack,ackStopSOS");
 	prompt.start();
 
 	prompt.get([ 'command' ], function(err, result)
@@ -212,6 +212,72 @@ function startPrompt(trackerID)
 					}
 					startPrompt(trackerID);
 				});
+			});
+		} else if (command === 'ackStartLiveTrack')
+		{
+			var opts = {
+				TID : trackerID,
+				DateTime : getDate(),
+				ALERT : "OK1",
+			};
+			console.log("Registering ack start live track with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
+			request.post({
+				url : dataURL,
+				json : opts
+			}, function(error, response, body)
+			{
+				if (error || response.statusCode != 200)
+				{
+					console.log("Error acking start live track.")
+				} else
+				{
+					console.log("Acked start live track!");
+				}
+				startPrompt(trackerID);
+			});
+		} else if (command === 'ackStopLiveTrack')
+		{
+			var opts = {
+				TID : trackerID,
+				DateTime : getDate(),
+				ALERT : "OK2",
+			};
+			console.log("Registering ack stop live track with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
+			request.post({
+				url : dataURL,
+				json : opts
+			}, function(error, response, body)
+			{
+				if (error || response.statusCode != 200)
+				{
+					console.log("Error acking stop live track.")
+				} else
+				{
+					console.log("Acked stop live track!");
+				}
+				startPrompt(trackerID);
+			});
+		} else if (command === 'ackStopSOS')
+		{
+			var opts = {
+				TID : trackerID,
+				DateTime : getDate(),
+				ALERT : "OK3",
+			};
+			console.log("Registering ack stop sos with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
+			request.post({
+				url : dataURL,
+				json : opts
+			}, function(error, response, body)
+			{
+				if (error || response.statusCode != 200)
+				{
+					console.log("Error acking stop sos.")
+				} else
+				{
+					console.log("Acked stop sos!");
+				}
+				startPrompt(trackerID);
 			});
 		} else
 		{
