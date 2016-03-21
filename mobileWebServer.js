@@ -321,7 +321,7 @@ app.get('/delete/gateway/:gatewayID', function(req, res)
 	var gatewayID = req.params.gatewayID;
 
 	var settingsURL = appEngineIP + "gateway/unlink";
-	request.del({
+	request.post({
 		url : settingsURL,
 		json : {
 			gatewayID : gatewayID
@@ -559,7 +559,7 @@ app.get('/delete/device/:gatewayID/:deviceID', function(req, res)
 
 	//console.log("Delete device BODY %s", JSON.stringify(req.body));
 	var settingsURL = appEngineIP + "gateway/unlinkDevice";
-	request.del({
+	request.post({
 		url : settingsURL,
 		headers : {
 			token : self.userToken,
