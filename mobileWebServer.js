@@ -601,11 +601,11 @@ app.post('/configure/panicbutton/settings/:gatewayID/:deviceID', function(req, r
 	request.post({
 		url : settingsURL,
 		form : {
-			p1 : emergencyContact1,
-			p2 : emergencyContact2,
-			p3 : emergencyContact3,
-			p4 : emergencyContact4,
-			p5 : emergencyContact5,
+			emergencyContact1 : emergencyContact1,
+			emergencyContact2 : emergencyContact2,
+			emergencyContact3 : emergencyContact3,
+			emergencyContact4 : emergencyContact4,
+			emergencyContact5 : emergencyContact5,
 			adminNumber : adminNumber,
 			callTimeout : callTimeout,
 			name : name,
