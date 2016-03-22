@@ -848,22 +848,22 @@ app.post('/configure/tracker/modifysettings/:userTrackerPairID', function(req, r
 	var adminNumber = req.body.adminNumber;
 	var callTimeout = req.body.callTimeout;
 	var heartbeat = req.body.heartbeat;
-	var callinEnabled = req.body.callinEnabled;
+	var callInEnabled = req.body.callInEnabled;
 
 	console.log("Setting tracker configuration details to %s", JSON.stringify(req.body));
 	var settingsURL = appEngineIP + "tracker/settings/" + userTrackerPairID;
 	request.post({
 		url : settingsURL,
 		form : {
-			p1 : emergencyContact1,
-			p2 : emergencyContact2,
-			p3 : emergencyContact3,
-			p4 : emergencyContact4,
-			p5 : emergencyContact5,
+			emergencyContact1 : emergencyContact1,
+			emergencyContact2 : emergencyContact2,
+			emergencyContact3 : emergencyContact3,
+			emergencyContact4 : emergencyContact4,
+			emergencyContact5 : emergencyContact5,
 			adminNumber : adminNumber,
 			callTimeout : callTimeout,
 			heartbeat : heartbeat,
-			callInEnabled : callinEnabled
+			callInEnabled : callInEnabled
 		},
 		headers : {
 			token : self.userToken,

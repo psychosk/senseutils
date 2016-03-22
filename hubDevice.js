@@ -223,6 +223,14 @@ function handleMessageFromEngine(data, flags)
 			'status' : 'OK',
 			'requestID' : requestID
 		}));
+	} else if (command === '/panicButton/stopSOS')
+	{
+		console.log("Stop SOS!")
+
+		process.emit('sendDataToCloud', JSON.stringify({
+			'status' : 'OK',
+			'requestID' : requestID
+		}));
 	} else
 	{
 		console.log("Unknown command:%s", command);
@@ -555,7 +563,7 @@ function registerZigbeeDevice(gatewayID, zigbeeRadioID, type, callback)
 			}
 		} else
 		{
-			callback("STATUSCODE:" + response.statusCode + ", BODY:"+body);
+			callback("STATUSCODE:" + response.statusCode + ", BODY:" + body);
 		}
 		;
 	});
