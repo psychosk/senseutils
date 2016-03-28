@@ -193,13 +193,23 @@ function handleMessageFromEngine(data, flags)
 		}));
 	} else if (command === '/gateway/settings/set')
 	{
-		ssid = params.ssid;
-		wifiPassword = params.password;
-		console.log("Setting gateway details wifi:%s, password:%s", ssid, password);
-		process.emit('sendDataToCloud', JSON.stringify({
-			'status' : 'OK',
-			'requestID' : requestID
-		}));
+		if (params.password.length < 8)
+		{
+			console.log("Password length:%s is less than 8 chars long, error!", password);
+			process.emit('sendDataToCloud', JSON.stringify({
+				'status' : "FAILURE: Incorrect Password Length <8...60>",
+				'requestID' : requestID
+			}));
+		} else
+		{
+			ssid = params.ssid;
+			wifiPassword = params.password;
+			console.log("Setting gateway details wifi:%s, password:%s", ssid, password);
+			process.emit('sendDataToCloud', JSON.stringify({
+				'status' : 'OK',
+				'requestID' : requestID
+			}));
+		}
 
 	} else if (command === '/smartPlug/controlDevice')
 	{

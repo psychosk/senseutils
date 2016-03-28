@@ -852,7 +852,7 @@ app.post('/configure/tracker/modifysettings/:userTrackerPairID', function(req, r
 	var name = req.body.name;
 
 	console.log("Setting tracker configuration details to %s", JSON.stringify(req.body));
-	var settingsURL = appEngineIP + "tracker/settings/" + userTrackerPairID;
+	var settingsURL = appEngineIP + "tracker/settings";
 	request.post({
 		url : settingsURL,
 		form : {
@@ -864,7 +864,8 @@ app.post('/configure/tracker/modifysettings/:userTrackerPairID', function(req, r
 			adminNumber : adminNumber,
 			callTimeout : callTimeout,
 			heartbeat : heartbeat,
-			callInEnabled : callInEnabled
+			callInEnabled : callInEnabled,
+			tid:userTrackerPairID
 		},
 		headers : {
 			token : self.userToken,
