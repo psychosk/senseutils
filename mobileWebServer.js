@@ -413,7 +413,7 @@ app.get('/configure/gateway/:gatewayID', function(req, res)
 
 	var gatewayID = req.params.gatewayID;
 
-	var settingsURL = appEngineIP + "gateway/settings/" + gatewayID;
+	var settingsURL = appEngineIP + "gateway/settings?gatewayID=" + gatewayID;
 	console.log("HITTING:%s", settingsURL);
 	request.get({
 		url : settingsURL,
@@ -478,7 +478,7 @@ app.get('/info/panicbutton/:gatewayID/:deviceID', function(req, res)
 
 	var gatewayID = req.params.gatewayID;
 	var deviceID = req.params.deviceID;
-	var settingsURL = appEngineIP + "panicbutton/history/" + gatewayID + "/" + deviceID;
+	var settingsURL = appEngineIP + "panicbutton/history?gatewayID=" + gatewayID + "&deviceID=" + deviceID;
 	console.log("Going to %s", settingsURL);
 	request.get({
 		url : settingsURL,
@@ -636,7 +636,7 @@ app.get('/configure/panicbutton/:gatewayID/:deviceID', function(req, res)
 
 	var gatewayID = req.params.gatewayID;
 	var deviceID = req.params.deviceID;
-	var settingsURL = appEngineIP + "panicbutton/settings/" + gatewayID + "/" + deviceID;
+	var settingsURL = appEngineIP + "panicbutton/settings?gatewayID=" + gatewayID + "&deviceID=" + deviceID;
 	// console.log("Going to %s",settingsURL);
 	request.get({
 		url : settingsURL,
@@ -710,7 +710,7 @@ app.get('/configure/smartplug/:gatewayID/:deviceID', function(req, res)
 	var gatewayID = req.params.gatewayID;
 	var deviceID = req.params.deviceID;
 
-	var settingsURL = appEngineIP + "smartplug/settings/" + gatewayID + "/" + deviceID;
+	var settingsURL = appEngineIP + "smartplug/settings?gatewayID=" + gatewayID + "&deviceID=" + deviceID;
 	console.log("Going to %s", settingsURL);
 	request.get({
 		url : settingsURL,
@@ -795,7 +795,7 @@ app.get('/info/smartplug/:gatewayID/:deviceID', function(req, res)
 
 	var gatewayID = req.params.gatewayID;
 	var deviceID = req.params.deviceID;
-	var settingsURL = appEngineIP + "smartPlug/history/" + gatewayID + "/" + deviceID;
+	var settingsURL = appEngineIP + "smartPlug/history?gatewayID=" + gatewayID + "&deviceID=" + deviceID;
 	console.log("Going to %s", settingsURL);
 	request.get({
 		url : settingsURL,
@@ -849,6 +849,7 @@ app.post('/configure/tracker/modifysettings/:userTrackerPairID', function(req, r
 	var callTimeout = req.body.callTimeout;
 	var heartbeat = req.body.heartbeat;
 	var callInEnabled = req.body.callInEnabled;
+	var name = req.body.name;
 
 	console.log("Setting tracker configuration details to %s", JSON.stringify(req.body));
 	var settingsURL = appEngineIP + "tracker/settings/" + userTrackerPairID;
@@ -884,7 +885,7 @@ app.post('/configure/tracker/modifysettings/:userTrackerPairID', function(req, r
 app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 {
 	var userTrackerPairID = req.params.userTrackerPairID;
-	var settingsURL = appEngineIP + "tracker/settings/" + userTrackerPairID;
+	var settingsURL = appEngineIP + "tracker/settings?userTrackerPairID=" + userTrackerPairID;
 	request.get({
 		url : settingsURL,
 		headers : {
@@ -975,7 +976,7 @@ app.get('/livetracking/tracker/:userTrackerPairID/:action', function(req, res)
 	request.post({
 		url : url,
 		form : {
-			TID : req.params.userTrackerPairID,
+			userTrackerPairID : req.params.userTrackerPairID,
 			action : req.params.action
 		},
 		headers : {
@@ -1004,7 +1005,7 @@ app.get('/stopsos/tracker/:userTrackerPairID', function(req, res)
 	request.post({
 		url : url,
 		form : {
-			TID : req.params.userTrackerPairID
+			userTrackerPairID : req.params.userTrackerPairID
 		},
 		headers : {
 			token : self.userToken,
@@ -1028,7 +1029,7 @@ app.get('/stopsos/tracker/:userTrackerPairID', function(req, res)
 app.get('/event/tracker/:userTrackerPairID', function(req, res)
 {
 	var userTrackerPairID = req.params.userTrackerPairID;
-	var settingsURL = appEngineIP + "tracker/events/" + userTrackerPairID;
+	var settingsURL = appEngineIP + "tracker/events?userTrackerPairID=" + userTrackerPairID;
 	var request = require('request');
 	var data = "";
 	request.get({
