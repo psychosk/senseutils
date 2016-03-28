@@ -855,7 +855,7 @@ app.post('/configure/tracker/modifysettings/:userTrackerPairID', function(req, r
 	var settingsURL = appEngineIP + "tracker/settings";
 	request.post({
 		url : settingsURL,
-		form : {
+		json : {
 			emergencyContact1 : emergencyContact1,
 			emergencyContact2 : emergencyContact2,
 			emergencyContact3 : emergencyContact3,
@@ -950,11 +950,11 @@ app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 			data += myForm.text().attr('name', 'heartbeat').render() + "<br>";
 			data += "Call in enabled:TRUE"
 			data += myForm.radio().attr({
-				name : 'callinEnabled',
+				name : 'callInEnabled',
 				value : '1'
 			}).setDefault().render();
 			data += " FALSE" + myForm.radio().attr({
-				name : 'callinEnabled',
+				name : 'callInEnabled',
 				value : '0'
 			}).render();
 
