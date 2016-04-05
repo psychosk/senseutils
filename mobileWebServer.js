@@ -1054,7 +1054,7 @@ app.get('/event/tracker/:userTrackerPairID', function(req, res)
 			for (var i = 0; i < eventData.length; i++)
 			{
 				var row = eventData[i];
-				console.log("Processing row %s", JSON.stringify(row));
+				//console.log("Processing row %s", JSON.stringify(row));
 
 				data += "<tr>";
 				var event = "";
@@ -1117,7 +1117,7 @@ app
 											for (var i = 0; i < locationData.length; i++)
 											{
 												var row = locationData[i];
-												console.log("Processing row %s", JSON.stringify(row));
+												//console.log("Processing row %s", JSON.stringify(row));
 
 												data += "<tr>";
 												data += "<td>" + row.latitude + "</td>";
