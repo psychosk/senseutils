@@ -1105,7 +1105,7 @@ app
 									},
 									function(error, response, body)
 									{
-										console.log("Response status code is :%s", response.statusCode);
+										console.log("Response status code is :%s and body is %s", response.statusCode,response.body);
 										if (error == null && response.statusCode == 200)
 										{
 											var locationData = JSON.parse(response.body);
