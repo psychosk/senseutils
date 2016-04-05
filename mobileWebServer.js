@@ -1091,8 +1091,8 @@ app
 				function(req, res)
 				{
 					var userTrackerPairID = req.params.userTrackerPairID;
-					var settingsURL = appEngineIP + "tracker/location?" + userTrackerPairID;
-					console.log("Going to %s with %s and %s", settingsURL, self.userToken, self.userID);
+					var settingsURL = appEngineIP + "tracker/location?userTrackerPairID=" + userTrackerPairID;
+					//console.log("Going to %s with %s and %s", settingsURL, self.userToken, self.userID);
 					var data = "";
 					request
 							.get(
@@ -1105,7 +1105,7 @@ app
 									},
 									function(error, response, body)
 									{
-										console.log("Response status code is :%s and body is %s", response.statusCode,response.body);
+										console.log("Response status code is :%s", response.statusCode);
 										if (error == null && response.statusCode == 200)
 										{
 											var locationData = JSON.parse(response.body);
