@@ -137,7 +137,7 @@ function getDate()
 function startPrompt(trackerID)
 {
 	console.log("your wish is my command....");
-	console.log("Allowable actions:panic,location,ackStartLiveTrack,ackStopLiveTrack,ackStopSOS");
+	console.log("Allowable actions:panic,location,ackStartLiveTrack,ackStopLiveTrack,ackStopSOS,ackGetLoc");
 	prompt.start();
 
 	prompt.get([ 'command' ], function(err, result)
@@ -279,6 +279,30 @@ function startPrompt(trackerID)
 				}
 				startPrompt(trackerID);
 			});
+			
+		} else if (command === 'ackGetLoc')
+		{
+			var opts = {
+				TID : trackerID,
+				DateTime : getDate(),
+				ALERT : "OK4",
+			};
+			console.log("Registering ack get loc with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
+			request.post({
+				url : dataURL,
+				json : opts
+			}, function(error, response, body)
+			{
+				if (error || response.statusCode != 200)
+				{
+					console.log("Error acking get loc.")
+				} else
+				{
+					console.log("Acked get loc!");
+				}
+				startPrompt(trackerID);
+			});
+			
 		} else
 		{
 			console.log("Command not understood.");

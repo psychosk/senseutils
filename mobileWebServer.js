@@ -1089,7 +1089,7 @@ app
 				function(req, res)
 				{
 					var userTrackerPairID = req.params.userTrackerPairID;
-					var settingsURL = appEngineIP + "tracker/location/" + userTrackerPairID;
+					var settingsURL = appEngineIP + "tracker/location?" + userTrackerPairID;
 					console.log("Going to %s with %s and %s", settingsURL, self.userToken, self.userID);
 					var data = "";
 					request
