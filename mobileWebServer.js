@@ -150,7 +150,8 @@ app.post('/user/registerUser', function(req, res)
 					token : responseParams.token
 				};
 
-				//console.log("Session data now looks like %s", JSON.stringify(sessionData));
+				// console.log("Session data now looks like %s",
+				// JSON.stringify(sessionData));
 
 				var getDevicesUrl = appEngineIP + "user/alldevices";
 				var request2 = require('request');
@@ -172,12 +173,13 @@ app.post('/user/registerUser', function(req, res)
 						var smartplugs = [];
 
 						var params = JSON.parse(response.body);
-						//console.log("GOT:%s", JSON.stringify(params));
+						// console.log("GOT:%s", JSON.stringify(params));
 
 						for (var i = 0; i < params.length; i++)
 						{
 							var row = params[i];
-							//console.log("Processing %s", JSON.stringify(row));
+							// console.log("Processing %s",
+							// JSON.stringify(row));
 							if (row.type === 'gateway')
 							{
 								gateways.push({
@@ -497,7 +499,7 @@ app.get('/info/panicbutton/:gatewayID/:deviceID', function(req, res)
 			for (var i = 0; i < params.length; i++)
 			{
 				var row = params[i];
-				//console.log("Processing row %s", JSON.stringify(row));
+				// console.log("Processing row %s", JSON.stringify(row));
 
 				data += "<tr>";
 				var event = "";
@@ -557,7 +559,7 @@ app.get('/delete/device/:gatewayID/:deviceID', function(req, res)
 	var gatewayID = req.params.gatewayID;
 	var deviceID = req.params.deviceID;
 
-	//console.log("Delete device BODY %s", JSON.stringify(req.body));
+	// console.log("Delete device BODY %s", JSON.stringify(req.body));
 	var settingsURL = appEngineIP + "gateway/unlinkDevice";
 	request.post({
 		url : settingsURL,
@@ -865,7 +867,7 @@ app.post('/configure/tracker/modifysettings/:userTrackerPairID', function(req, r
 			callTimeout : callTimeout,
 			heartbeat : heartbeat,
 			callInEnabled : callInEnabled,
-			tid:userTrackerPairID
+			tid : userTrackerPairID
 		},
 		headers : {
 			token : self.userToken,
@@ -1108,6 +1110,8 @@ app
 										{
 											var locationData = JSON.parse(response.body);
 
+											console.log("%j",locationData);
+											
 											data += "<html><body><b>Location Data:</b><br><table><tr><td><b>Lat</b></td><td><b>Long</b></td><td><b>Speed</b></td><td><b>Altitude</b></td><td><b>Gps derived location?</b></td><td><b>Battery level (%)</b></td><td><b>Timestamp</b></td></tr>";
 
 											for (var i = 0; i < locationData.length; i++)
