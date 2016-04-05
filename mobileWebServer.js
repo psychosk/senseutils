@@ -9,8 +9,6 @@ var logger = require('express-logger');
 // var bodyParser = require('body-parser');
 var app = express();
 
-process.env.TZ = 'Asia/Colombo';
-
 // all environments
 app.set('port', process.env.PORT || 4000);
 app.set('views', __dirname + '/views');
@@ -28,10 +26,10 @@ app.use(logger({
 }));
 
 var webserverIP = "http://hub.smartsense.co.in:4000/";
-var hubEngineIP = "http://hub.smartsense.co.in:80/";
-var trackerEngineIP = "http://tracker.smartsense.co.in:80/";
-var appEngineIP = "http://app.smartsense.co.in:80/";
-var appWSEngineIP = "ws://app.smartsense.co.in:81/"
+var hubEngineIP = "http://hub.smartsense.co.in:7320/";
+var trackerEngineIP = "http://tracker.smartsense.co.in:7326/";
+var appEngineIP = "http://app.smartsense.co.in:7322/";
+var appWSEngineIP = "ws://app.smartsense.co.in:7323/"
 
 var sessionData = {};
 

@@ -18,7 +18,7 @@ if (args[0] == null || args[1] == null || args[2] == null || args[3] == null)
 
 var hubEngineIP = "hub.smartsense.co.in:7320/";
 var hubEngineWSIP = "hub.smartsense.co.in:7321/";
-var appEngineIP = "app.smartsense.co.in:80/"
+var appEngineIP = "app.smartsense.co.in:7322/"
 
 if (process.env.NODE_ENV === 'dev')
 {

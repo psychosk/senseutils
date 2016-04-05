@@ -15,8 +15,8 @@ if (IMEI == null || phoneNumber == null || email == null || password == null)
 	process.exit(1);
 }
 
-var trackerEngineIP = "tracker.smartsense.co.in:80/";
-var appEngineIP = "app.smartsense.co.in:80/"
+var trackerEngineIP = "tracker.smartsense.co.in:7326/";
+var appEngineIP = "app.smartsense.co.in:7322/"
 if (process.env.NODE_ENV === 'dev')
 {
 	trackerEngineIP = "localhost:7326/";

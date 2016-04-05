@@ -14,8 +14,8 @@ if (args[0] == null || args[1] == null )
 	process.exit(1);
 }
 
-var appEngineIP = "app.smartsense.co.in:80";
-var appEngineWSIP = "app.smartsense.co.in:81";
+var appEngineIP = "app.smartsense.co.in:7322";
+var appEngineWSIP = "app.smartsense.co.in:7323";
 
 var token = null;
 var userID = null;
