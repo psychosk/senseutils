@@ -10,28 +10,57 @@ var password = args[1];
 var gatewayMac = args[2];
 var privateIP = args[3];
 
+var fs = require('fs');
+var path = require('path');
+
+var hubEngineIP = "hub.smartsense.co.in:7320/";
+var hubEngineWSIP = "hub.smartsense.co.in:7321/";
+var appEngineIP = "app.smartsense.co.in:7322/"
+
+var agentOptions = {};
+
+var SSL_ENABLED = 0;
+var HTTPS_PREFIX = "";
+if (SSL_ENABLED)
+{
+	HTTPS_PREFIX = "s";
+	hubEngineIP = "hub.smartsense.co.in:7330/";
+	hubEngineWSIP = "hub.smartsense.co.in:7331/";
+	appEngineIP = "app.smartsense.co.in:7332/"
+
+}
+
 if (args[0] == null || args[1] == null || args[2] == null || args[3] == null)
 {
 	console.log("args:email password gatewayMac privateIP");
 	process.exit(1);
 }
 
-var hubEngineIP = "hub.smartsense.co.in:7320/";
-var hubEngineWSIP = "hub.smartsense.co.in:7321/";
-var appEngineIP = "app.smartsense.co.in:7322/"
-
 if (process.env.NODE_ENV === 'dev')
 {
 	hubEngineIP = "localhost:7320/";
 	hubEngineWSIP = "localhost:7321/";
 	appEngineIP = "localhost:7322/";
+
+	if (SSL_ENABLED)
+	{
+		HTTPS_PREFIX = "s";
+		hubEngineIP = "localhost:7330/";
+		hubEngineWSIP = "localhost:7331/";
+		appEngineIP = "localhost:7332/"
+		//since we are using self signed certs in dev
+		agentOptions = {
+			rejectUnauthorized : false
+		};
+	}
+
 }
 
-var registerURL = "http://" + hubEngineIP + "gateway/register";
-var loginURL = "http://" + hubEngineIP + "gateway/login"
-var userLoginURL = "http://" + appEngineIP + "user/login";
+var registerURL = "http" + HTTPS_PREFIX + "://" + hubEngineIP + "gateway/register";
+var loginURL = "http" + HTTPS_PREFIX + "://" + hubEngineIP + "gateway/login"
+var userLoginURL = "http" + HTTPS_PREFIX + "://" + appEngineIP + "user/login";
 
-var addPanicButtonURL = "http://" + hubEngineIP + "panicButton/register/ZRID"
+var addPanicButtonURL = "http" + HTTPS_PREFIX + "://" + hubEngineIP + "panicButton/register/ZRID"
 
 var wsURL = "ws://" + hubEngineWSIP + "?gatewayID=G1&userID=U1&token=T1";
 var ssid = "Chantik";
@@ -51,7 +80,8 @@ request.post({
 	form : {
 		email : email,
 		password : password
-	}
+	},
+	agentOptions : agentOptions
 }, function(error, response, body)
 {
 	if (!error && response.statusCode == 200)
@@ -66,7 +96,9 @@ request.post({
 				gatewayMac : gatewayMac,
 				userID : self.userID,
 				privateIP : privateIP
-			}
+			},
+			agentOptions : agentOptions
+
 		}, function(error, response, body)
 		{
 			if (!error && response.statusCode == 200)
@@ -80,7 +112,8 @@ request.post({
 					form : {
 						gatewayID : gatewayID,
 						userID : userID
-					}
+					},
+					agentOptions : agentOptions
 				}, function(error, response, body)
 				{
 					if (!error && response.statusCode == 200)
@@ -93,7 +126,7 @@ request.post({
 					{
 						console.log("ERROR:%s", error);
 						console.log("STATUSCODE:%s", response && response.statusCode);
-						console.log("BODY:%s", response.body && response.body);
+						console.log("BODY:%s", response && response.body);
 					}
 				});
 
@@ -101,14 +134,14 @@ request.post({
 			{
 				console.log("ERROR:%s", error);
 				console.log("STATUSCODE:%s", response && response.statusCode);
-				console.log("BODY:%s", response.body && response.body);
+				console.log("BODY:%s", response && response.body);
 			}
 		});
 	} else
 	{
 		console.log("ERROR:%s", error);
 		console.log("STATUSCODE:%s", response && response.statusCode);
-		console.log("BODY:%s", response.body && response.body);
+		console.log("BODY:%s", response && response.body);
 	}
 });
 
@@ -301,7 +334,7 @@ function startPrompt(gatewayID)
 		} else if (result.command === 'panicButtonAction')
 		{
 
-			var allDevicesURL = "http://" + appEngineIP + "user/alldevices";
+			var allDevicesURL = "http" + HTTPS_PREFIX + "://" + appEngineIP + "user/alldevices";
 			console.log("Hitting %s", allDevicesURL);
 			var headers = {
 				'token' : self.userToken,
@@ -310,7 +343,8 @@ function startPrompt(gatewayID)
 			console.log("Params are %s", JSON.stringify(headers));
 			request.get({
 				url : allDevicesURL,
-				headers : headers
+				headers : headers,
+				agentOptions : agentOptions
 			}, function(error, response, body)
 			{
 				console.log("Registered panic buttons....");
@@ -326,16 +360,43 @@ function startPrompt(gatewayID)
 				prompt.get([ 'ID' ], function(err, result)
 				{
 					var deviceID = result.ID;
-					console.log("Allowable actions:buttonpress,ivrsuccess,ivrfailure,falldetected,fallfalsealarm,lowbattery");
+					console.log("Allowable actions:buttonpress,ivrsuccess,ivrfailure,falldetected,fallfalsealarm,lowbattery,unpair");
 					prompt.get([ 'action' ], function(err, result)
 					{
-						if (result.action === "buttonpress")
+						if (result.action === "unpair")
+						{
+							var request2 = require('request');
+							var timeStamp = getDate();
+							var url = "http" + HTTPS_PREFIX + "://" + hubEngineIP + "gateway/unlinkDevice";
+							console.log("Executing POST:%s", url);
+
+							request2.post({
+								url : url,
+								json : {
+									deviceID : deviceID
+								},
+								headers : {
+									'token' : self.token,
+									'gatewayid' : gatewayID
+								},
+								agentOptions : agentOptions
+							}, function(error, response, body)
+							{
+								if (error)
+									console.log(error);
+								else if (response.statusCode == 200)
+									console.log("Unpair acknowledged!");
+								else
+									console.log("Unpair NOT acknowledged!");
+								startPrompt(gatewayID);
+							});
+						} else if (result.action === "buttonpress")
 						{
 							var request2 = require('request');
 							// 2016-01-01T01:33:26.000Z
 							var timeStamp = getDate();
 							console.log("Using timestamp %s", timeStamp);
-							var panicButtonPressURL = "http://" + hubEngineIP + "panicButton/buttonPress/" + deviceID + "/" + timeStamp;
+							var panicButtonPressURL = "http" + HTTPS_PREFIX + "://" + hubEngineIP + "panicButton/buttonPress/" + deviceID + "/" + timeStamp;
 							console.log("Executing POST:%s", panicButtonPressURL);
 
 							request2.post({
@@ -343,7 +404,8 @@ function startPrompt(gatewayID)
 								headers : {
 									'token' : self.token,
 									'gatewayid' : gatewayID
-								}
+								},
+								agentOptions : agentOptions
 							}, function(error, response, body)
 							{
 								if (error)
@@ -359,14 +421,15 @@ function startPrompt(gatewayID)
 							console.log("Assuming phone number +919987792049");
 							var request2 = require('request');
 							// /panicButton/buttonPress/gatewayID/deviceID/timeStamp
-							var ivr = "http://" + hubEngineIP + "panicButton/ivrSuccess/" + deviceID + "/+919987792049/" + getDate();
+							var ivr = "http" + HTTPS_PREFIX + "://" + hubEngineIP + "panicButton/ivrSuccess/" + deviceID + "/+919987792049/" + getDate();
 							console.log("Executing POST:%s", ivr)
 							request2.post({
 								url : ivr,
 								headers : {
 									'token' : self.token,
 									'gatewayid' : gatewayID
-								}
+								},
+								agentOptions : agentOptions
 							}, function(error, response, body)
 							{
 								if (error)
@@ -380,14 +443,15 @@ function startPrompt(gatewayID)
 						} else if (result.action === 'ivrfailure')
 						{
 							var request2 = require('request');
-							var ivr = "http://" + hubEngineIP + "panicButton/ivrFailure/" + deviceID + "/" + getDate();
+							var ivr = "http" + HTTPS_PREFIX + "://" + hubEngineIP + "panicButton/ivrFailure/" + deviceID + "/" + getDate();
 							console.log("Executing POST:%s", ivr)
 							request2.post({
 								url : ivr,
 								headers : {
 									'token' : self.token,
 									'gatewayid' : gatewayID
-								}
+								},
+								agentOptions : agentOptions
 							}, function(error, response, body)
 							{
 								if (error)
@@ -402,14 +466,15 @@ function startPrompt(gatewayID)
 						{
 							var request2 = require('request');
 							console.log("Assuming number of g's is 2.0!");
-							var ivr = "http://" + hubEngineIP + "panicButton/fallDetected/" + deviceID + "/2.0/" + getDate();
+							var ivr = "http" + HTTPS_PREFIX + "://" + hubEngineIP + "panicButton/fallDetected/" + deviceID + "/2.0/" + getDate();
 							console.log("Executing POST:%s", ivr)
 							request2.post({
 								url : ivr,
 								headers : {
 									'token' : self.token,
 									'gatewayid' : gatewayID
-								}
+								},
+								agentOptions : agentOptions
 							}, function(error, response, body)
 							{
 								if (error)
@@ -424,14 +489,15 @@ function startPrompt(gatewayID)
 						{
 							var request2 = require('request');
 							console.log("Assuming number of g's is 2.0!");
-							var ivr = "http://" + hubEngineIP + "panicButton/fallFalseAlarm/" + deviceID + "/2.0/" + getDate();
+							var ivr = "http" + HTTPS_PREFIX + "://" + hubEngineIP + "panicButton/fallFalseAlarm/" + deviceID + "/2.0/" + getDate();
 							console.log("Executing POST:%s", ivr)
 							request2.post({
 								url : ivr,
 								headers : {
 									'token' : self.token,
 									'gatewayid' : gatewayID
-								}
+								},
+								agentOptions : agentOptions
 							}, function(error, response, body)
 							{
 								if (error)
@@ -446,14 +512,15 @@ function startPrompt(gatewayID)
 						{
 							var request2 = require('request');
 							console.log("Assuming battery level is 20%");
-							var ivr = "http://" + hubEngineIP + "panicButton/lowBattery/" + deviceID + "/20/" + getDate();
+							var ivr = "http" + HTTPS_PREFIX + "://" + hubEngineIP + "panicButton/lowBattery/" + deviceID + "/20/" + getDate();
 							console.log("Executing POST:%s", ivr)
 							request2.post({
 								url : ivr,
 								headers : {
 									'token' : self.token,
 									'gatewayid' : gatewayID
-								}
+								},
+								agentOptions : agentOptions
 							}, function(error, response, body)
 							{
 								if (error)
@@ -470,13 +537,14 @@ function startPrompt(gatewayID)
 			});
 		} else if (result.command === 'smartPlugAction')
 		{
-			var allDevicesURL = "http://" + appEngineIP + "user/alldevices";
+			var allDevicesURL = "http" + HTTPS_PREFIX + "://" + appEngineIP + "user/alldevices";
 			request.get({
 				url : allDevicesURL,
 				headers : {
 					'token' : self.userToken,
 					'userid' : self.userID
-				}
+				},
+				agentOptions : agentOptions
 			}, function(error, response, body)
 			{
 				console.log("Registered smart plugs ....");
@@ -499,14 +567,15 @@ function startPrompt(gatewayID)
 						{
 							var request2 = require('request');
 							// /panicButton/buttonPress/gatewayID/deviceID/timeStamp
-							var url = "http://" + hubEngineIP + "smartPlug/manualAction/" + gatewayID + "/" + deviceID + "/" + result.action + "/" + getDate();
+							var url = "http" + HTTPS_PREFIX + "://" + hubEngineIP + "smartPlug/manualAction/" + gatewayID + "/" + deviceID + "/" + result.action + "/" + getDate();
 							console.log("Executing POST:%s", url)
 							request2.post({
 								url : url,
 								headers : {
 									'token' : self.token,
 									'gatewayid' : gatewayID
-								}
+								},
+								agentOptions : agentOptions
 							}, function(error2, response2, body2)
 							{
 								if (error2)
@@ -536,7 +605,7 @@ var smartPlugs = [];
 
 function registerZigbeeDevice(gatewayID, zigbeeRadioID, type, callback)
 {
-	var url = "http://" + hubEngineIP;
+	var url = "http" + HTTPS_PREFIX + "://" + hubEngineIP;
 	if (type === 'SM')
 	{
 		url += "smartPlug/register/" + zigbeeRadioID;
@@ -552,7 +621,8 @@ function registerZigbeeDevice(gatewayID, zigbeeRadioID, type, callback)
 		headers : {
 			'token' : self.token,
 			'gatewayid' : gatewayID
-		}
+		},
+		agentOptions : agentOptions
 
 	}, function(error, response, body)
 	{

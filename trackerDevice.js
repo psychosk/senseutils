@@ -17,17 +17,39 @@ if (IMEI == null || phoneNumber == null || email == null || password == null)
 
 var trackerEngineIP = "tracker.smartsense.co.in:7326/";
 var appEngineIP = "app.smartsense.co.in:7322/"
+
+var agentOptions = {};
+
+var SSL_ENABLED = 0;
+var HTTPS_PREFIX = "";
+if (SSL_ENABLED)
+{
+	HTTPS_PREFIX = "s";
+	var trackerEngineIP = "tracker.smartsense.co.in:7336/";
+	var appEngineIP = "app.smartsense.co.in:7332/"
+}
 if (process.env.NODE_ENV === 'dev')
 {
 	trackerEngineIP = "localhost:7326/";
 	appEngineIP = "localhost:7322/"
+
+	if (SSL_ENABLED)
+	{
+		HTTPS_PREFIX = "s";
+		trackerEngineIP = "localhost:7336/";
+		appEngineIP = "localhost:7332/"
+		// since we are using self signed certs in dev
+		agentOptions = {
+			rejectUnauthorized : false
+		};
+	}
 }
 
-var initURL = "http://" + trackerEngineIP + "tracker/register";
-var registerURL = "http://" + appEngineIP + "tracker/register/user";
-var loginURL = "http://" + trackerEngineIP + "tracker/login";
-var dataURL = "http://" + trackerEngineIP + "tracker/data";
-var userLoginURL = "http://" + appEngineIP + "user/login";
+var initURL = "http" + HTTPS_PREFIX + "://" + trackerEngineIP + "tracker/register";
+var registerURL = "http" + HTTPS_PREFIX + "://" + appEngineIP + "tracker/register/user";
+var loginURL = "http" + HTTPS_PREFIX + "://" + trackerEngineIP + "tracker/login";
+var dataURL = "http" + HTTPS_PREFIX + "://" + trackerEngineIP + "tracker/data";
+var userLoginURL = "http" + HTTPS_PREFIX + "://" + appEngineIP + "user/login";
 var self = this;
 
 console.log("USER LOGIN.....");
@@ -37,7 +59,8 @@ request.post({
 	form : {
 		email : email,
 		password : password
-	}
+	},
+	agentOptions : agentOptions
 }, function(error, response, body)
 {
 	if (!error && response.statusCode == 200)
@@ -53,7 +76,8 @@ request.post({
 			url : initURL,
 			form : {
 				imei : IMEI
-			}
+			},
+			agentOptions : agentOptions
 		}, function(error, response, body)
 		{
 			if (!error && response.statusCode == 200)
@@ -68,7 +92,8 @@ request.post({
 					headers : {
 						userid : self.userID,
 						token : self.userToken
-					}
+					},
+					agentOptions : agentOptions
 				}, function(error, response, body)
 				{
 					if (!error && response.statusCode == 200)
@@ -84,7 +109,8 @@ request.post({
 								url : loginURL,
 								form : {
 									TID : result.TID
-								}
+								},
+								agentOptions : agentOptions
 							}, function(error, response, body)
 							{
 								if (!error && response.statusCode == 200)
@@ -131,13 +157,13 @@ request.post({
 
 function getDate()
 {
-	return new Date().toISOString().replace(/T/, ' ').replace(/\.\d\d\dZ/, '');
+	return new Date().toISOString().replace(/\.\d\d\dZ/, '') + '+05:30';
 }
 
 function startPrompt(trackerID)
 {
 	console.log("your wish is my command....");
-	console.log("Allowable actions:panic,location,ackStartLiveTrack,ackStopLiveTrack,ackStopSOS,ackGetLoc");
+	console.log("Allowable actions:panic,location,ackStartLiveTrack,ackStopLiveTrack,ackStopSOS,ackGetLoc,ackConfig");
 	prompt.start();
 
 	prompt.get([ 'command' ], function(err, result)
@@ -155,7 +181,8 @@ function startPrompt(trackerID)
 			console.log("Registering panic button press with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
 			request.post({
 				url : dataURL,
-				form : opts
+				form : opts,
+				agentOptions : agentOptions
 			}, function(error, response, body)
 			{
 				if (error || response.statusCode != 200)
@@ -200,7 +227,8 @@ function startPrompt(trackerID)
 				console.log("Registering location update with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
 				request.post({
 					url : dataURL,
-					form : opts
+					form : opts,
+					agentOptions : agentOptions
 				}, function(error, response, body)
 				{
 					if (error || response.statusCode != 200)
@@ -223,11 +251,13 @@ function startPrompt(trackerID)
 			console.log("Registering ack start live track with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
 			request.post({
 				url : dataURL,
-				json : opts
+				json : opts,
+				agentOptions : agentOptions
 			}, function(error, response, body)
 			{
 				if (error || response.statusCode != 200)
 				{
+					0
 					console.log("Error acking start live track.")
 				} else
 				{
@@ -245,7 +275,8 @@ function startPrompt(trackerID)
 			console.log("Registering ack stop live track with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
 			request.post({
 				url : dataURL,
-				json : opts
+				json : opts,
+				agentOptions : agentOptions
 			}, function(error, response, body)
 			{
 				if (error || response.statusCode != 200)
@@ -267,7 +298,8 @@ function startPrompt(trackerID)
 			console.log("Registering ack stop sos with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
 			request.post({
 				url : dataURL,
-				json : opts
+				json : opts,
+				agentOptions : agentOptions
 			}, function(error, response, body)
 			{
 				if (error || response.statusCode != 200)
@@ -279,7 +311,7 @@ function startPrompt(trackerID)
 				}
 				startPrompt(trackerID);
 			});
-			
+
 		} else if (command === 'ackGetLoc')
 		{
 			var opts = {
@@ -290,7 +322,8 @@ function startPrompt(trackerID)
 			console.log("Registering ack get loc with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
 			request.post({
 				url : dataURL,
-				json : opts
+				json : opts,
+				agentOptions : agentOptions
 			}, function(error, response, body)
 			{
 				if (error || response.statusCode != 200)
@@ -302,7 +335,31 @@ function startPrompt(trackerID)
 				}
 				startPrompt(trackerID);
 			});
-			
+
+		} else if (command === 'ackConfig')
+		{
+			var opts = {
+				TID : trackerID,
+				DateTime : getDate(),
+				ALERT : "OK5",
+			};
+			console.log("Registering ack config with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
+			request.post({
+				url : dataURL,
+				json : opts,
+				agentOptions : agentOptions
+			}, function(error, response, body)
+			{
+				if (error || response.statusCode != 200)
+				{
+					console.log("Error acking config.")
+				} else
+				{
+					console.log("Acked config!");
+				}
+				startPrompt(trackerID);
+			});
+
 		} else
 		{
 			console.log("Command not understood.");
