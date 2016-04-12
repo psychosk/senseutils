@@ -19,7 +19,7 @@ var appEngineIP = "app.smartsense.co.in:7322/"
 
 var agentOptions = {};
 
-var SSL_ENABLED = 0;
+var SSL_ENABLED = 1;
 var HTTPS_PREFIX = "";
 if (SSL_ENABLED)
 {
@@ -48,7 +48,7 @@ if (process.env.NODE_ENV === 'dev')
 		hubEngineIP = "localhost:7330/";
 		hubEngineWSIP = "localhost:7331/";
 		appEngineIP = "localhost:7332/"
-		//since we are using self signed certs in dev
+		// since we are using self signed certs in dev
 		agentOptions = {
 			rejectUnauthorized : false
 		};
@@ -65,6 +65,7 @@ var addPanicButtonURL = "http" + HTTPS_PREFIX + "://" + hubEngineIP + "panicButt
 var wsURL = "ws://" + hubEngineWSIP + "?gatewayID=G1&userID=U1&token=T1";
 var ssid = "Chantik";
 var wifiPassword = "yeahbaby!";
+var p1, p2, p3, p4, p5, callTimeout;
 
 var token = null;
 var userToken = null;
@@ -215,7 +216,13 @@ function handleMessageFromEngine(data, flags)
 			'requestID' : requestID,
 			'gatewayID' : gatewayID,
 			'SSID' : ssid,
-			'KEY' : wifiPassword
+			'KEY' : wifiPassword,
+			p1 : p1,
+			p2 : p2,
+			p3 : p3,
+			p4 : p4,
+			p5 : p5,
+			timeout : callTimeout
 		}));
 	} else if (command === "/gateway/heartbeat")
 	{
@@ -237,7 +244,8 @@ function handleMessageFromEngine(data, flags)
 		{
 			ssid = params.ssid;
 			wifiPassword = params.password;
-			console.log("Setting gateway details wifi:%s, password:%s", ssid, password);
+			p1 = params.p1, p2 = params.p2, p3 = params.p3, p4 = params.p4, p5 = params.p5, callTimeout = params.timeout;
+			console.log("Setting gateway details wifi:%s, password:%s, p1-->p5:%s, timeout:%s", ssid, password, p1 + ":" + p2 + ":" + p3 + ":" + p4 + ":" + p5, callTimeout);
 			process.emit('sendDataToCloud', JSON.stringify({
 				'status' : 'OK',
 				'requestID' : requestID

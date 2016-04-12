@@ -8,10 +8,11 @@ var IMEI = args[0];
 var phoneNumber = args[1];
 var email = args[2];
 var password = args[3];
+var operator = args[4];
 
-if (IMEI == null || phoneNumber == null || email == null || password == null)
+if (IMEI == null || phoneNumber == null || email == null || password == null || operator == null)
 {
-	console.log("args:IMEI phoneNumber email password");
+	console.log("args:IMEI phoneNumber email password operator(airtel,idea)");
 	process.exit(1);
 }
 
@@ -87,7 +88,8 @@ request.post({
 					url : registerURL,
 					form : {
 						phoneNumber : phoneNumber,
-						imei : IMEI
+						imei : IMEI,
+						operator : operator
 					},
 					headers : {
 						userid : self.userID,
@@ -105,6 +107,7 @@ request.post({
 
 						prompt.get([ 'TID' ], function(err, result)
 						{
+
 							request.post({
 								url : loginURL,
 								form : {

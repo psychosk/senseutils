@@ -29,7 +29,8 @@ var webserverIP = "http://hub.smartsense.co.in:4000/";
 var hubEngineIP = "http://hub.smartsense.co.in:7320/";
 var trackerEngineIP = "http://tracker.smartsense.co.in:7326/";
 var appEngineIP = "http://app.smartsense.co.in:7322/";
-var appWSEngineIP = "ws://app.smartsense.co.in:7323/"
+//var appWSEngineIP = "ws://app.smartsense.co.in:7323/"
+var appWSEngineIP = "ws://app.smartsense.co.in:7333/"; //secure web socket;
 
 var sessionData = {};
 
@@ -44,7 +45,8 @@ if (process.env.NODE_ENV === 'dev' || process.env.USER === 'sid')
 	hubEngineIP = "http://localhost:7320/";
 	trackerEngineIP = "http://localhost:7326/";
 	appEngineIP = "http://localhost:7322/";
-	appWSEngineIP = "ws://localhost:7323/"
+	//appWSEngineIP = "ws://localhost:7323/"
+	appWSEngineIP = "ws://localhost:7333/"
 	app.use(express.errorHandler());
 }
 
