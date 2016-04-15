@@ -266,6 +266,12 @@ function handleMessageFromEngine(data, flags)
 			'status' : 'OK',
 			'requestID' : requestID
 		}));
+	} else if (command === '/smartPlug/powerDetails')
+	{
+		process.emit('sendDataToCloud', JSON.stringify({
+			'status' : 'OK',
+			'requestID' : requestID
+		}));
 	} else if (command === '/gateway/permitjoin')
 	{
 		console.log("Permit join!!!!!!!!")

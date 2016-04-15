@@ -29,8 +29,8 @@ var webserverIP = "http://hub.smartsense.co.in:4000/";
 var hubEngineIP = "http://hub.smartsense.co.in:7320/";
 var trackerEngineIP = "http://tracker.smartsense.co.in:7326/";
 var appEngineIP = "http://app.smartsense.co.in:7322/";
-//var appWSEngineIP = "ws://app.smartsense.co.in:7323/"
-var appWSEngineIP = "ws://app.smartsense.co.in:7333/"; //secure web socket;
+// var appWSEngineIP = "ws://app.smartsense.co.in:7323/"
+var appWSEngineIP = "ws://app.smartsense.co.in:7333/"; // secure web socket;
 
 var sessionData = {};
 
@@ -45,7 +45,7 @@ if (process.env.NODE_ENV === 'dev' || process.env.USER === 'sid')
 	hubEngineIP = "http://localhost:7320/";
 	trackerEngineIP = "http://localhost:7326/";
 	appEngineIP = "http://localhost:7322/";
-	//appWSEngineIP = "ws://localhost:7323/"
+	// appWSEngineIP = "ws://localhost:7323/"
 	appWSEngineIP = "ws://localhost:7333/"
 	app.use(express.errorHandler());
 }
@@ -259,6 +259,7 @@ app.post('/user/registerUser', function(req, res)
 							var deviceName = smartplugs[i].deviceName;
 							data += "DeviceName: " + deviceName + ",DeviceID:" + deviceID + "<a href=\"" + webserverIP + "configure/smartplug/" + gatewayID + "/" + deviceID + "\">Configure</a>  "
 							data += "<a href=\"" + webserverIP + "info/smartplug/" + gatewayID + "/" + deviceID + "\">Info</a>  ";
+							data += "<a href=\"" + webserverIP + "power/smartplug/" + gatewayID + "/" + deviceID + "\">Info</a>  ";
 							data += "<a href=\"" + webserverIP + "action/smartplug/" + gatewayID + "/" + deviceID + "/1\"> Switch on</a>  ";
 							data += "<a href=\"" + webserverIP + "action/smartplug/" + gatewayID + "/" + deviceID + "/0\"> Switch off</a>"
 							data += "<a href=\"" + webserverIP + "delete/device/" + gatewayID + "/" + deviceID + "\"> Unlink</a><br>";
@@ -763,13 +764,18 @@ app.get('/action/smartplug/:gatewayID/:deviceID/:action', function(req, res)
 	var deviceID = req.params.deviceID;
 	var action = req.params.action;
 
-	var url = appEngineIP + "smartPlug/controlDevice/" + gatewayID + "/" + deviceID + "/" + action + "/" + getDate();
+	var url = appEngineIP + "smartPlug/controlDevice";
 	console.log("Going to %s", url);
 	request.post({
 		url : url,
 		headers : {
 			token : self.userToken,
 			userid : self.userID
+		},
+		json : {
+			gatewayID : gatewayID,
+			deviceID : deviceID,
+			action : action
 		}
 	}, function(error, response, body)
 	{
@@ -785,6 +791,29 @@ app.get('/action/smartplug/:gatewayID/:deviceID/:action', function(req, res)
 		}
 	});
 
+});
+
+app.get('/power/smartplug/:gatewayID/:deviceID', function(req, res)
+{
+
+	// gateway/settings/:gatewayID
+
+	var gatewayID = req.params.gatewayID;
+	var deviceID = req.params.deviceID;
+	var settingsURL = appEngineIP + "smartPlug/powerDetails?gatewayID=" + gatewayID + "&deviceID=" + deviceID;
+	console.log("Going to %s", settingsURL);
+	request.get({
+		url : settingsURL,
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		// console.log(body);
+		console.log("Got response : %j", response);
+		res.send(response);
+	});
 });
 
 /**
@@ -1054,7 +1083,7 @@ app.get('/event/tracker/:userTrackerPairID', function(req, res)
 			for (var i = 0; i < eventData.length; i++)
 			{
 				var row = eventData[i];
-				//console.log("Processing row %s", JSON.stringify(row));
+				// console.log("Processing row %s", JSON.stringify(row));
 
 				data += "<tr>";
 				var event = "";
@@ -1092,7 +1121,8 @@ app
 				{
 					var userTrackerPairID = req.params.userTrackerPairID;
 					var settingsURL = appEngineIP + "tracker/location?userTrackerPairID=" + userTrackerPairID;
-					//console.log("Going to %s with %s and %s", settingsURL, self.userToken, self.userID);
+					// console.log("Going to %s with %s and %s", settingsURL,
+					// self.userToken, self.userID);
 					var data = "";
 					request
 							.get(
@@ -1110,14 +1140,15 @@ app
 										{
 											var locationData = JSON.parse(response.body);
 
-											console.log("%j",locationData);
-											
+											console.log("%j", locationData);
+
 											data += "<html><body><b>Location Data:</b><br><table><tr><td><b>Lat</b></td><td><b>Long</b></td><td><b>Speed</b></td><td><b>Altitude</b></td><td><b>Gps derived location?</b></td><td><b>Battery level (%)</b></td><td><b>Timestamp</b></td></tr>";
 
 											for (var i = 0; i < locationData.length; i++)
 											{
 												var row = locationData[i];
-												//console.log("Processing row %s", JSON.stringify(row));
+												// console.log("Processing row
+												// %s", JSON.stringify(row));
 
 												data += "<tr>";
 												data += "<td>" + row.latitude + "</td>";
