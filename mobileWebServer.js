@@ -812,7 +812,7 @@ app.get('/power/smartplug/:gatewayID/:deviceID', function(req, res)
 	{
 		// console.log(body);
 		console.log("Got response : %j", response);
-		res.send(response);
+		res.send(response.body);
 	});
 });
 
