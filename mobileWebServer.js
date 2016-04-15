@@ -259,7 +259,7 @@ app.post('/user/registerUser', function(req, res)
 							var deviceName = smartplugs[i].deviceName;
 							data += "DeviceName: " + deviceName + ",DeviceID:" + deviceID + "<a href=\"" + webserverIP + "configure/smartplug/" + gatewayID + "/" + deviceID + "\">Configure</a>  "
 							data += "<a href=\"" + webserverIP + "info/smartplug/" + gatewayID + "/" + deviceID + "\">Info</a>  ";
-							data += "<a href=\"" + webserverIP + "power/smartplug/" + gatewayID + "/" + deviceID + "\">Info</a>  ";
+							data += "<a href=\"" + webserverIP + "power/smartplug/" + gatewayID + "/" + deviceID + "\">Power</a>  ";
 							data += "<a href=\"" + webserverIP + "action/smartplug/" + gatewayID + "/" + deviceID + "/1\"> Switch on</a>  ";
 							data += "<a href=\"" + webserverIP + "action/smartplug/" + gatewayID + "/" + deviceID + "/0\"> Switch off</a>"
 							data += "<a href=\"" + webserverIP + "delete/device/" + gatewayID + "/" + deviceID + "\"> Unlink</a><br>";
