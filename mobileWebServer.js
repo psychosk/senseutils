@@ -387,14 +387,16 @@ app.post('/configure/gateway/modifysettings/:gatewayID', function(req, res)
 	var name = req.body.name;
 
 	console.log("Setting gateway to %s,%s,%s", ssid, password, name);
-	var settingsURL = appEngineIP + "gateway/settings/" + gatewayID;
+	var settingsURL = appEngineIP + "gateway/settings";
 	request.post({
 		url : settingsURL,
-		form : {
+		json : {
 			ssid : ssid,
 			password : password,
-			name : name
+			name : name,
+			gatewayID : gatewayID
 		},
+		
 		headers : {
 			token : self.userToken,
 			userid : self.userID

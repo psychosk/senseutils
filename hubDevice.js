@@ -63,8 +63,8 @@ var userLoginURL = "http" + HTTPS_PREFIX + "://" + appEngineIP + "user/login";
 var addPanicButtonURL = "http" + HTTPS_PREFIX + "://" + hubEngineIP + "panicButton/register/ZRID"
 
 var wsURL = "ws://" + hubEngineWSIP + "?gatewayID=G1&userID=U1&token=T1";
-var ssid = "Chantik";
-var wifiPassword = "yeahbaby!";
+var ssid;
+var wifiPassword;
 var p1, p2, p3, p4, p5, callTimeout;
 
 var token = null;
