@@ -403,7 +403,7 @@ app.post('/configure/gateway/modifysettings/:gatewayID', function(req, res)
 		}
 	}, function(error, response, body)
 	{
-		res.json(body);
+		res.send(util.format("error:%s,response:%j",error,response));
 	});
 
 });
