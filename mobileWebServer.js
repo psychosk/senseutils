@@ -810,9 +810,16 @@ app.get('/power/smartplug/:gatewayID/:deviceID', function(req, res)
 		}
 	}, function(error, response, body)
 	{
-		// console.log(body);
-		console.log("Got response : %j", response);
-		res.send(response.body);
+		if (error)
+		{
+			res.status(400).send("Smart plug power error:" + error);
+		} else if (response.statusCode != 200)
+		{
+			res.send(util.format("Response status code : %s, body : %s", response.statusCode, body));
+		} else
+		{
+			res.send(body);
+		}
 	});
 });
 

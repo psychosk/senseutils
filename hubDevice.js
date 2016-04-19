@@ -244,13 +244,40 @@ function handleMessageFromEngine(data, flags)
 		{
 			ssid = params.ssid;
 			wifiPassword = params.password;
-			p1 = params.p1, p2 = params.p2, p3 = params.p3, p4 = params.p4, p5 = params.p5, callTimeout = params.timeout;
-			console.log("Setting gateway details wifi:%s, password:%s, p1-->p5:%s, timeout:%s", ssid, password, p1 + ":" + p2 + ":" + p3 + ":" + p4 + ":" + p5, callTimeout);
+			// p1 = params.p1, p2 = params.p2, p3 = params.p3, p4 = params.p4,
+			// p5 = params.p5, callTimeout = params.timeout;
+			console.log("Setting gateway details wifi:%s, password:%s", ssid, password);
 			process.emit('sendDataToCloud', JSON.stringify({
 				'status' : 'OK',
 				'requestID' : requestID
 			}));
 		}
+
+	} else if (command === '/gateway/panicbutton/settings/set')
+	{
+		p1 = params.p1, p2 = params.p2, p3 = params.p3, p4 = params.p4, p5 = params.p5, callTimeout = params.timeout;
+		console.log("Setting gateway panic button details to p1:%s,p2:%s,p3:%s,p4:%s,p5:%s", p1, p2, p3, p4, p5);
+		process.emit('sendDataToCloud', JSON.stringify({
+			'status' : 'OK',
+			'requestID' : requestID
+		}));
+
+	} else if (command === '/gateway/panicbutton/settings/get')
+	{
+		// {deviceID:id,gatewayID:id,p1:number1,p2:number2,p3:number3,p4:number4,p5:number5,callTimeout:number}
+		// p1 = params.p1, p2 = params.p2, p3 = params.p3, p4 = params.p4, p5 =
+		// params.p5, callTimeout = params.timeout;
+		console.log("Getting gateway panic button details : p1:%s,p2:%s,p3:%s,p4:%s,p5:%s", p1, p2, p3, p4, p5);
+		process.emit('sendDataToCloud', JSON.stringify({
+			status : 'OK',
+			p1 : p1,
+			p2 : p2,
+			p3 : p3,
+			p4 : p4,
+			p5 : p5,
+			callTimeout : callTimeout,
+			'requestID' : requestID
+		}));
 
 	} else if (command === '/smartPlug/controlDevice')
 	{
@@ -268,6 +295,7 @@ function handleMessageFromEngine(data, flags)
 		}));
 	} else if (command === '/smartPlug/powerDetails')
 	{
+		console.log("Received request for power details [%j]",params);
 		process.emit('sendDataToCloud', JSON.stringify({
 			'status' : 'OK',
 			'requestID' : requestID
