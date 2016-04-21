@@ -992,11 +992,11 @@ app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 			data += "Call in enabled:TRUE"
 			data += myForm.radio().attr({
 				name : 'callInEnabled',
-				value : 'Y'
+				value : '1'
 			}).setDefault().render();
 			data += " FALSE" + myForm.radio().attr({
 				name : 'callInEnabled',
-				value : 'N'
+				value : '0'
 			}).render();
 
 			data += "<br>";
