@@ -432,9 +432,9 @@ app.get('/configure/gateway/:gatewayID', function(req, res)
 		if (response.statusCode == 200)
 		{
 
-			var params = JSON.parse(body);
+			var params = body;
 			console.log(JSON.stringify(params));
-
+			
 			var data = "NAME:" + params.name + ",WIFI SSID:" + params.SSID + ",WIFI PASS:" + params.KEY + "<br>";
 
 			var Form = require('form-builder').Form;
@@ -948,6 +948,7 @@ app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 			var adminNumber = responseParams.adminNumber;
 			var callTimeout = responseParams.callTimeout;
 			var heartbeat = responseParams.heartbeat;
+			var callinEnabled = responseParams.callinEnabled;
 
 			var data = "Existing settings...<br>"
 			if (emergencyContact1 == null)
@@ -957,7 +958,7 @@ app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 			{
 				data += "Emergency contact 1:" + emergencyContact1 + "<br>emergency contact 2:" + emergencyContact2 + "<br>emergency contact 3:" + emergencyContact3 + "<br>emergency contact 4:"
 						+ emergencyContact4 + "<br>emergencyContact 5:" + emergencyContact5 + "<br>adminNumber:" + adminNumber + "<br>callTimeout:" + callTimeout + "<br>heartbeat:" + heartbeat
-						+ "<br>"
+						+ "<br>callinEnabled:" + callinEnabled + "<br>";
 			}
 			var Form = require('form-builder').Form;
 
@@ -991,11 +992,11 @@ app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 			data += "Call in enabled:TRUE"
 			data += myForm.radio().attr({
 				name : 'callInEnabled',
-				value : '1'
+				value : 'Y'
 			}).setDefault().render();
 			data += " FALSE" + myForm.radio().attr({
 				name : 'callInEnabled',
-				value : '0'
+				value : 'N'
 			}).render();
 
 			data += "<br>";
