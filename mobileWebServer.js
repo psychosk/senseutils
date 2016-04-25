@@ -435,7 +435,8 @@ app.get('/configure/gateway/:gatewayID', function(req, res)
 			var params = body;
 			console.log(JSON.stringify(params));
 			
-			var data = "NAME:" + params.name + ",WIFI SSID:" + params.SSID + ",WIFI PASS:" + params.KEY + "<br>";
+			var data = JSON.stringify(params) + "<br>";
+			//var data = "NAME:" + params.name + ",WIFI SSID:" + params.SSID + ",WIFI PASS:" + params.KEY + "<br>";
 
 			var Form = require('form-builder').Form;
 
