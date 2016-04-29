@@ -110,7 +110,7 @@ app.post('/user/registerUser', function(req, res)
 		}, function(error, response, body)
 		{
 
-			if (!error && response.statusCode == 200)
+			if (!error && response && response.statusCode == 200)
 			{
 				var responseParams = JSON.parse(body);
 				sessionData[responseParams.userID] = {};
@@ -140,7 +140,7 @@ app.post('/user/registerUser', function(req, res)
 			}
 		}, function(error, response, body)
 		{
-			if (!error && response.statusCode == 200)
+			if (!error && response && response.statusCode == 200)
 			{
 				var responseParams = JSON.parse(body);
 				self.userToken = responseParams.token;
@@ -335,12 +335,12 @@ app.get('/delete/gateway/:gatewayID', function(req, res)
 		}
 	}, function(error, response, body)
 	{
-		if (response.statusCode == 200)
+		if (response && response.statusCode == 200)
 		{
 			res.send("Unlink completed!");
 		} else
 		{
-			res.send(util.format("Status code:%s, error:%s", response.statusCode, body));
+			res.send(util.format("Response:%s, body:%s", response, body));
 		}
 	});
 
@@ -365,12 +365,12 @@ app.get('/permitjoin/gateway/:gatewayID', function(req, res)
 		}
 	}, function(error, response, body)
 	{
-		if (response.statusCode == 200)
+		if (response && response.statusCode == 200)
 		{
 			res.send("Permit join action complete, quick you have 60 seconds!");
 		} else
 		{
-			res.send(util.format("Status code:%s, error:%s", response.statusCode, body));
+			res.send(util.format("Response:%s, body:%s", response, body));
 		}
 	});
 
@@ -497,7 +497,7 @@ app.get('/info/panicbutton/:gatewayID/:deviceID', function(req, res)
 		// console.log(body);
 		// console.log("Got response!");
 		var data = "<table><tr><td><b>Event</b></td><td><b>Timestamp</b></td><td><b>Phone number</b></td></tr>";
-		if (response.statusCode == 200)
+		if (response && response.statusCode == 200)
 		{
 			var params = JSON.parse(response.body);
 			for (var i = 0; i < params.length; i++)
@@ -548,12 +548,12 @@ app.post('/configure/smartplug/settings/:gatewayID/:deviceID', function(req, res
 		}
 	}, function(error, response, body)
 	{
-		if (response.statusCode == 200)
+		if (response && response.statusCode == 200)
 		{
 			res.send("Configuration set successfully, now go back and refresh!");
 		} else
 		{
-			res.send("Error setting configuration:%s", response.body);
+			res.send("Error setting configuration:%s", body);
 		}
 	});
 });
@@ -578,12 +578,12 @@ app.get('/delete/device/:gatewayID/:deviceID', function(req, res)
 
 	}, function(error, response, body)
 	{
-		if (response.statusCode == 200)
+		if (response && response.statusCode == 200)
 		{
 			res.send("Device deleted successfully!");
 		} else
 		{
-			res.send("Error deleting device:%s", response.body);
+			res.send("Error deleting device:%s", body);
 		}
 	});
 });
@@ -622,12 +622,12 @@ app.post('/configure/panicbutton/settings/:gatewayID/:deviceID', function(req, r
 		}
 	}, function(error, response, body)
 	{
-		if (response.statusCode == 200)
+		if (response && response.statusCode == 200)
 		{
 			res.send("Configuration set successfully!");
 		} else
 		{
-			res.send("Error setting configuration:%s", response.body);
+			res.send("Error setting configuration:%s", body);
 		}
 	});
 });
@@ -695,8 +695,7 @@ app.get('/configure/panicbutton/:gatewayID/:deviceID', function(req, res)
 
 		} else
 		{
-			data += body.error;
-			// data += "Error:"+JSON.parse(body).error;
+			data += body;
 		}
 		res.send(data);
 	});
@@ -755,7 +754,7 @@ app.get('/configure/smartplug/:gatewayID/:deviceID', function(req, res)
 
 		} else
 		{
-			data += body.error;
+			data += body;
 		}
 		res.send(data);
 	});
@@ -785,7 +784,7 @@ app.get('/action/smartplug/:gatewayID/:deviceID/:action', function(req, res)
 		if (error)
 		{
 			res.status(400).send("Smart plug action error:" + error);
-		} else if (response.statusCode != 200)
+		} else if (response && response.statusCode != 200)
 		{
 			res.send(util.format("Response status code : %s, body : %s", response.statusCode, body));
 		} else
@@ -816,7 +815,7 @@ app.get('/power/smartplug/:gatewayID/:deviceID', function(req, res)
 		if (error)
 		{
 			res.status(400).send("Smart plug power error:" + error);
-		} else if (response.statusCode != 200)
+		} else if (response && response.statusCode != 200)
 		{
 			res.send(util.format("Response status code : %s, body : %s", response.statusCode, body));
 		} else
@@ -914,7 +913,7 @@ app.post('/configure/tracker/modifysettings/:userTrackerPairID', function(req, r
 		}
 	}, function(error, response, body)
 	{
-		if (error == null && response.statusCode == 200)
+		if (error == null && response && response.statusCode == 200)
 		{
 			res.send("Configuration set successfully!");
 		} else
@@ -1031,7 +1030,7 @@ app.get('/livetracking/tracker/:userTrackerPairID/:action', function(req, res)
 		if (error)
 		{
 			res.status(400).send("Tracker live tracking error:" + error);
-		} else if (response.statusCode != 200)
+		} else if (response && response.statusCode != 200)
 		{
 			res.send(util.format("Response status code : %s, body : %s", response.statusCode, body));
 		} else
@@ -1059,7 +1058,7 @@ app.get('/stopsos/tracker/:userTrackerPairID', function(req, res)
 		if (error)
 		{
 			res.status(400).send("Tracker stop SOS error:" + error);
-		} else if (response.statusCode != 200)
+		} else if (response && response.statusCode != 200)
 		{
 			res.send(util.format("Response status code : %s, body : %s", response.statusCode, body));
 		} else

@@ -9,6 +9,7 @@ var email = args[0];
 var password = args[1];
 var gatewayMac = args[2];
 var privateIP = args[3];
+var secure = args[4];
 
 var fs = require('fs');
 var path = require('path');
@@ -17,9 +18,19 @@ var hubEngineIP = "hub.smartsense.co.in:7320/";
 var hubEngineWSIP = "hub.smartsense.co.in:7321/";
 var appEngineIP = "app.smartsense.co.in:7322/"
 
+if (args[0] == null || args[1] == null || args[2] == null || args[3] == null || args[4] == null)
+{
+	console.log("args:email password gatewayMac privateIP [01]\n[01]=indicates if it is to use https\n");
+	process.exit(1);
+}
+
 var agentOptions = {};
 
-var SSL_ENABLED = 1;
+var SSL_ENABLED = 0;
+if (secure==="1"){
+	SSL_ENABLED = 1;
+}
+
 var HTTPS_PREFIX = "";
 if (SSL_ENABLED)
 {
@@ -28,12 +39,6 @@ if (SSL_ENABLED)
 	hubEngineWSIP = "hub.smartsense.co.in:7331/";
 	appEngineIP = "app.smartsense.co.in:7332/"
 
-}
-
-if (args[0] == null || args[1] == null || args[2] == null || args[3] == null)
-{
-	console.log("args:email password gatewayMac privateIP");
-	process.exit(1);
 }
 
 if (process.env.NODE_ENV === 'dev')
@@ -295,7 +300,7 @@ function handleMessageFromEngine(data, flags)
 		}));
 	} else if (command === '/smartPlug/powerDetails')
 	{
-		console.log("Received request for power details [%j]",params);
+		console.log("Received request for power details [%j]", params);
 		process.emit('sendDataToCloud', JSON.stringify({
 			'status' : 'OK',
 			'requestID' : requestID
