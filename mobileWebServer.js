@@ -145,7 +145,7 @@ app.post('/user/registerUser', function(req, res)
 				var responseParams = JSON.parse(body);
 				self.userToken = responseParams.token;
 				self.userID = responseParams.id;
-				console.log("Login accepted, token is %s and userID is %s", self.userToken, self.userID);
+				//console.log("Login accepted, token is %s and userID is %s", self.userToken, self.userID);
 				sessionData[responseParams.id] = {
 					token : responseParams.token
 				};
@@ -340,7 +340,7 @@ app.get('/delete/gateway/:gatewayID', function(req, res)
 			res.send("Unlink completed!");
 		} else
 		{
-			res.send(util.format("Response:%s, body:%s", response, body));
+			res.send(util.format("Response:%j, body:%j", response, body));
 		}
 	});
 
@@ -370,7 +370,7 @@ app.get('/permitjoin/gateway/:gatewayID', function(req, res)
 			res.send("Permit join action complete, quick you have 60 seconds!");
 		} else
 		{
-			res.send(util.format("Response:%s, body:%s", response, body));
+			res.send(util.format("Response:%j, body:%j", response, body));
 		}
 	});
 
