@@ -285,6 +285,7 @@ app.post('/user/registerUser', function(req, res)
 							data += "  <a href=\"" + webserverIP + "livetracking/tracker/" + trackers[i].deviceID + "/1\">Start live tracking</a>";
 							data += "  <a href=\"" + webserverIP + "livetracking/tracker/" + trackers[i].deviceID + "/0\">Stop live tracking</a>";
 							data += "  <a href=\"" + webserverIP + "stopsos/tracker/" + trackers[i].deviceID + "\">Stop SOS mode</a>";
+							data += "  <a href=\"" + webserverIP + "unlink/tracker/" + trackers[i].deviceID + "\">Unlink tracker</a>";
 							data += "<br>";
 
 						}
@@ -1039,6 +1040,34 @@ app.get('/livetracking/tracker/:userTrackerPairID/:action', function(req, res)
 		}
 	});
 });
+
+app.get('/unlink/tracker/:userTrackerPairID', function(req, res)
+		{
+			var url = appEngineIP + "tracker/unlink";
+			console.log("Going to %s", url);
+			request.post({
+				url : url,
+				form : {
+					userTrackerPairID : req.params.userTrackerPairID
+				},
+				headers : {
+					token : self.userToken,
+					userid : self.userID
+				}
+			}, function(error, response, body)
+			{
+				if (error)
+				{
+					res.status(400).send("Tracker unlink error:" + error);
+				} else if (response && response.statusCode != 200)
+				{
+					res.send(util.format("Response status code : %s, body : %s", response.statusCode, body));
+				} else
+				{
+					res.send("Tracker unlink accepted!");
+				}
+			});
+		});
 
 app.get('/stopsos/tracker/:userTrackerPairID', function(req, res)
 {
