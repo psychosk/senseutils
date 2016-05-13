@@ -145,7 +145,8 @@ app.post('/user/registerUser', function(req, res)
 				var responseParams = JSON.parse(body);
 				self.userToken = responseParams.token;
 				self.userID = responseParams.id;
-				//console.log("Login accepted, token is %s and userID is %s", self.userToken, self.userID);
+				// console.log("Login accepted, token is %s and userID is %s",
+				// self.userToken, self.userID);
 				sessionData[responseParams.id] = {
 					token : responseParams.token
 				};
@@ -247,6 +248,7 @@ app.post('/user/registerUser', function(req, res)
 							var deviceName = panicbuttons[i].deviceName;
 							data += "DeviceName: " + deviceName + ",DeviceID:" + deviceID + "<a href=\"" + webserverIP + "configure/panicbutton/" + gatewayID + "/" + deviceID + "\">Configure</a>  "
 							data += "<a href=\"" + webserverIP + "info/panicbutton/" + gatewayID + "/" + deviceID + "\"> Info</a>";
+							data += "<a href=\"" + webserverIP + "stopsos/panicbutton/" + gatewayID + "/" + deviceID + "\"> Stop sos</a>";
 							data += "<a href=\"" + webserverIP + "delete/device/" + gatewayID + "/" + deviceID + "\"> Unlink </a><br>";
 						}
 
@@ -397,14 +399,14 @@ app.post('/configure/gateway/modifysettings/:gatewayID', function(req, res)
 			name : name,
 			gatewayID : gatewayID
 		},
-		
+
 		headers : {
 			token : self.userToken,
 			userid : self.userID
 		}
 	}, function(error, response, body)
 	{
-		res.send(util.format("error:%s,response:%j",error,response));
+		res.send(util.format("error:%s,response:%j", error, response));
 	});
 
 });
@@ -435,9 +437,10 @@ app.get('/configure/gateway/:gatewayID', function(req, res)
 
 			var params = body;
 			console.log(JSON.stringify(params));
-			
+
 			var data = JSON.stringify(params) + "<br>";
-			//var data = "NAME:" + params.name + ",WIFI SSID:" + params.SSID + ",WIFI PASS:" + params.KEY + "<br>";
+			// var data = "NAME:" + params.name + ",WIFI SSID:" + params.SSID +
+			// ",WIFI PASS:" + params.KEY + "<br>";
 
 			var Form = require('form-builder').Form;
 
@@ -468,11 +471,39 @@ app.get('/configure/gateway/:gatewayID', function(req, res)
 
 		} else
 		{
-			data += util.format("%j",body);
+			data += util.format("%j", body);
 		}
 		res.send(data);
 	});
 
+});
+
+app.get('/stopsos/panicbutton/:gatewayID/:deviceID', function(req, res)
+{
+	var gatewayID = req.params.gatewayID;
+	var deviceID = req.params.deviceID;
+	var settingsURL = appEngineIP + "panicbutton/stopsos";
+	console.log("Going to %s", settingsURL);
+	request.post({
+		url : settingsURL,
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		},
+		json : {
+			gatewayID : gatewayID,
+			deviceID : deviceID
+		}
+	}, function(error, response, body)
+	{
+		if (response && response.statusCode == 200)
+		{
+			res.send("stopSOS executed successfully!");
+		} else
+		{
+			res.send("Error executing stopSOS:%s", body);
+		}
+	});
 });
 
 /**
@@ -1042,32 +1073,32 @@ app.get('/livetracking/tracker/:userTrackerPairID/:action', function(req, res)
 });
 
 app.get('/unlink/tracker/:userTrackerPairID', function(req, res)
+{
+	var url = appEngineIP + "tracker/unlink";
+	console.log("Going to %s", url);
+	request.post({
+		url : url,
+		form : {
+			userTrackerPairID : req.params.userTrackerPairID
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		if (error)
 		{
-			var url = appEngineIP + "tracker/unlink";
-			console.log("Going to %s", url);
-			request.post({
-				url : url,
-				form : {
-					userTrackerPairID : req.params.userTrackerPairID
-				},
-				headers : {
-					token : self.userToken,
-					userid : self.userID
-				}
-			}, function(error, response, body)
-			{
-				if (error)
-				{
-					res.status(400).send("Tracker unlink error:" + error);
-				} else if (response && response.statusCode != 200)
-				{
-					res.send(util.format("Response status code : %s, body : %s", response.statusCode, body));
-				} else
-				{
-					res.send("Tracker unlink accepted!");
-				}
-			});
-		});
+			res.status(400).send("Tracker unlink error:" + error);
+		} else if (response && response.statusCode != 200)
+		{
+			res.send(util.format("Response status code : %s, body : %s", response.statusCode, body));
+		} else
+		{
+			res.send("Tracker unlink accepted!");
+		}
+	});
+});
 
 app.get('/stopsos/tracker/:userTrackerPairID', function(req, res)
 {
