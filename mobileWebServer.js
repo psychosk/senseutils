@@ -352,7 +352,7 @@ app.get('/freespace/camera/:cameraID', function(req, res)
 		{
 			var cameraID = req.params.cameraID;
 
-			var settingsURL = appEngineIP + "camera/freesdcardspace";
+			var settingsURL = appEngineIP + "camera/freesdcardspace?cameraID=" + gatewayID;
 			request.get({
 				url : settingsURL,
 				headers : {
