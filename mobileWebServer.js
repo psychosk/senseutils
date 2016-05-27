@@ -274,8 +274,8 @@ app.post('/user/registerUser', function(req, res)
 						for (var i = 0; i < cameras.length; ++i)
 						{
 							data += "Name :" + cameras[i].cameraName + ", CameraID:" + cameras[i].deviceID;
-							data += "<a href=\"" + webserverIP + "mountsdcard/camera/" + cameras[i].cameraID + "\">mount sd card</a>"
-							data += "<a href=\"" + webserverIP + "freespace/camera/" + cameras[i].cameraID + "\">Get free space on sd card</a><br>"
+							data += "<a href=\"" + webserverIP + "mountsdcard/camera/" + cameras[i].deviceID + "\">mount sd card</a>"
+							data += "<a href=\"" + webserverIP + "freespace/camera/" + cameras[i].deviceID + "\">Get free space on sd card</a><br>"
 						}
 
 						data += "<b>Your linked trackers:</b><br>";
