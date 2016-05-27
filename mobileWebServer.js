@@ -235,6 +235,7 @@ app.post('/user/registerUser', function(req, res)
 									+ "\">Configure</a>";
 							data += "<a href=\"" + webserverIP + "permitjoin/gateway/" + gateways[i].deviceID + "\"> Permit join </a>";
 							data += "<a href=\"" + webserverIP + "delete/gateway/" + gateways[i].deviceID + "\"> Unlink (unlinks all paired smartplugs/panicbuttons as well) </a>";
+							data += "<a href=\"" + webserverIP + "factoryreset/gateway/" + gateways[i].deviceID + "\"> Factory reset </a>";
 							data += "<br>";
 
 						}
@@ -272,8 +273,9 @@ app.post('/user/registerUser', function(req, res)
 
 						for (var i = 0; i < cameras.length; ++i)
 						{
-							data += "Name :" + cameras[i].cameraName + ", CameraID:" + cameras[i].deviceID + "<a href=\"" + webserverIP + "configure/camera/" + cameras[i].cameraID
-									+ "\">Configure</a><br>"
+							data += "Name :" + cameras[i].cameraName + ", CameraID:" + cameras[i].deviceID;
+							data += "<a href=\"" + webserverIP + "mountsdcard/camera/" + cameras[i].cameraID + "\">mount sd card</a>"
+							data += "<a href=\"" + webserverIP + "freespace/camera/" + cameras[i].cameraID + "\">Get free space on sd card</a><br>"
 						}
 
 						data += "<b>Your linked trackers:</b><br>";
@@ -318,6 +320,57 @@ app.post('/user/registerUser', function(req, res)
 
 	}
 });
+
+app.get('/mountsdcard/camera/:cameraID', function(req, res)
+{
+	var cameraID = req.params.cameraID;
+
+	var settingsURL = appEngineIP + "camera/mountsdcard";
+	request.post({
+		url : settingsURL,
+		json : {
+			cameraID : cameraID
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		if (response && response.statusCode == 200)
+		{
+			res.send("SD card mounted!");
+		} else
+		{
+			res.send(util.format("Response:%j, body:%j", response, body));
+		}
+	});
+
+});
+
+app.get('/freespace/camera/:cameraID', function(req, res)
+		{
+			var cameraID = req.params.cameraID;
+
+			var settingsURL = appEngineIP + "camera/freesdcardspace";
+			request.get({
+				url : settingsURL,
+				headers : {
+					token : self.userToken,
+					userid : self.userID
+				}
+			}, function(error, response, body)
+			{
+				if (response && response.statusCode == 200)
+				{
+					res.send(body);
+				} else
+				{
+					res.send(util.format("Response:%j, body:%j", response, body));
+				}
+			});
+
+		});
 
 /**
  * Change settings of gateway
