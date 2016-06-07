@@ -236,6 +236,7 @@ app.post('/user/registerUser', function(req, res)
 							data += "<a href=\"" + webserverIP + "permitjoin/gateway/" + gateways[i].deviceID + "\"> Permit join </a>";
 							data += "<a href=\"" + webserverIP + "delete/gateway/" + gateways[i].deviceID + "\"> Unlink (unlinks all paired smartplugs/panicbuttons as well) </a>";
 							data += "<a href=\"" + webserverIP + "factoryreset/gateway/" + gateways[i].deviceID + "\"> Factory reset </a>";
+							data += "<a href=\"" + webserverIP + "firmwareupdate/gateway/" + gateways[i].deviceID + "\"> Firmware update</a>";
 							data += "<br>";
 
 						}
@@ -276,6 +277,7 @@ app.post('/user/registerUser', function(req, res)
 							data += "Name :" + cameras[i].cameraName + ", CameraID:" + cameras[i].deviceID;
 							data += "<a href=\"" + webserverIP + "mountsdcard/camera/" + cameras[i].deviceID + "\">mount sd card</a>"
 							data += "<a href=\"" + webserverIP + "freespace/camera/" + cameras[i].deviceID + "\">Get free space on sd card</a><br>"
+							data += "<a href=\"" + webserverIP + "deletefile/camera/" + cameras[i].deviceID + "\">Delete file on sd card</a><br>"
 						}
 
 						data += "<b>Your linked trackers:</b><br>";
@@ -349,28 +351,28 @@ app.get('/mountsdcard/camera/:cameraID', function(req, res)
 });
 
 app.get('/freespace/camera/:cameraID', function(req, res)
+{
+	var cameraID = req.params.cameraID;
+
+	var settingsURL = appEngineIP + "camera/freesdcardspace?cameraID=" + cameraID;
+	request.get({
+		url : settingsURL,
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		if (response && response.statusCode == 200)
 		{
-			var cameraID = req.params.cameraID;
+			res.send(body);
+		} else
+		{
+			res.send(util.format("Response:%j, body:%j", response, body));
+		}
+	});
 
-			var settingsURL = appEngineIP + "camera/freesdcardspace?cameraID=" + cameraID;
-			request.get({
-				url : settingsURL,
-				headers : {
-					token : self.userToken,
-					userid : self.userID
-				}
-			}, function(error, response, body)
-			{
-				if (response && response.statusCode == 200)
-				{
-					res.send(body);
-				} else
-				{
-					res.send(util.format("Response:%j, body:%j", response, body));
-				}
-			});
-
-		});
+});
 
 /**
  * Change settings of gateway
@@ -529,6 +531,53 @@ app.get('/configure/gateway/:gatewayID', function(req, res)
 		res.send(data);
 	});
 
+});
+
+app.get('/firmwareupdate/gateway/:gatewayID', function(req, res)
+{
+	var gatewayID = req.params.gatewayID;
+	var Form = require('form-builder').Form;
+
+	var myForm = Form.create({
+		action : webserverIP + 'firmwareupdate/gateway/fire/' + gatewayID,
+		method : 'post'
+	});
+
+	// opens the form
+	data += myForm.open(); // will return: <form action="/signup"
+	// class="myform-class">
+
+	data += "Enter version number to upgrade to...<br>";
+
+	data += "Version number:"
+	data += myForm.text().attr('name', 'fwVersion').render() + "<br>";
+	data += myForm.submit().attr('value', 'upgrade').render();
+
+	res.send(data);
+
+});
+
+app.post('/firmwareupdate/gateway/fire/:gatewayID', function(req, res)
+{
+	var gatewayID = req.params.gatewayID;
+	var fwVersion = req.body.fwVersion;
+
+	console.log("Asking gatewayID:%s to update to fwVersion:%s", gatewayID,fwVersion);
+	var url = appEngineIP + "gateway/firmwareUpdate";
+	request.post({
+		url : url,
+		json : {
+			gatewayID : gatewayID,
+			version : fwVersion
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		res.send(util.format("error:%s,response:%j", error, response));
+	});
 });
 
 app.get('/stopsos/panicbutton/:gatewayID/:deviceID', function(req, res)
