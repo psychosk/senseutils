@@ -6,7 +6,8 @@ var forms = require('forms');
 var request = require('request');
 var util = require('util');
 var logger = require('express-logger');
-// var bodyParser = require('body-parser');
+var fileUpload = require('express-fileupload');
+var fs = require('fs');
 var app = express();
 
 // all environments
@@ -18,6 +19,7 @@ app.use(express.bodyParser());
 app.use(express.methodOverride());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(fileUpload());
 
 var logdir = "/var/tmp/mws.log"
 
@@ -29,13 +31,10 @@ var webserverIP = "http://hub.smartsense.co.in:4000/";
 var hubEngineIP = "http://hub.smartsense.co.in:7320/";
 var trackerEngineIP = "http://tracker.smartsense.co.in:7326/";
 var appEngineIP = "http://app.smartsense.co.in:7322/";
-// var appWSEngineIP = "ws://app.smartsense.co.in:7323/"
 var appWSEngineIP = "ws://app.smartsense.co.in:7333/"; // secure web socket;
 
 var sessionData = {};
 
-// var userToken = null;
-// var userID = null;
 var self = this;
 
 if (process.env.NODE_ENV === 'dev' || process.env.USER === 'sid')
@@ -45,7 +44,6 @@ if (process.env.NODE_ENV === 'dev' || process.env.USER === 'sid')
 	hubEngineIP = "http://localhost:7320/";
 	trackerEngineIP = "http://localhost:7326/";
 	appEngineIP = "http://localhost:7322/";
-	// appWSEngineIP = "ws://localhost:7323/"
 	appWSEngineIP = "ws://localhost:7333/"
 	app.use(express.errorHandler());
 }
@@ -295,6 +293,14 @@ app.post('/user/registerUser', function(req, res)
 							data += "<br>";
 
 						}
+
+						data += "<br><br><br><b>Upload gateway firmware:</b><br>";
+						data += "<form ref='uploadForm' id='uploadForm' action='" + webserverIP + "upload' method='post' encType=\"multipart/form-data\">"
+						data += "<input type=\"file\" name=\"sampleFile\" />";
+						data += "<br>Version: <input type=\"text\" name=\"version\" />";
+						data += "<br>MD5 checksum: <input type=\"text\" name=\"checksum\" />";
+						data += "<input type=\"submit\" value=\"Upload!\" />";
+						data += "</form>";
 					} else
 					{
 						console.log("Get failed!");
@@ -321,6 +327,41 @@ app.post('/user/registerUser', function(req, res)
 		});
 
 	}
+});
+
+app.post('/upload', function(req, res)
+{
+	console.log("%j",req.files);
+	var sampleFile;
+	if (!req.files)
+	{
+		res.send('No files were uploaded.');
+		return;
+	}
+	if (!req.body.version){
+		res.send('No version number was provided.');
+		return;
+	}
+	if (!req.body.checksum){
+		res.send('No checksum was provided.');
+		return;
+	}
+
+	sampleFile = req.files.sampleFile;
+	var version = req.body.version;
+	var checksum = req.body.checksum;
+	
+	fs.rename(sampleFile.path,'/var/tmp/gatewayfirmware.'+version, function(err)
+	{
+		if (err)
+		{
+			res.status(500).send(err);
+		} else
+		{
+			fs.writeFileSync('/var/tmp/gatewayfirmware.'+version+'.crc',checksum);
+			res.send('File uploaded with version number ' + version + ' and checksum ' + checksum);
+		}
+	});
 });
 
 app.get('/mountsdcard/camera/:cameraID', function(req, res)
@@ -535,6 +576,7 @@ app.get('/configure/gateway/:gatewayID', function(req, res)
 
 app.get('/firmwareupdate/gateway/:gatewayID', function(req, res)
 {
+	var data = "";
 	var gatewayID = req.params.gatewayID;
 	var Form = require('form-builder').Form;
 
@@ -544,8 +586,7 @@ app.get('/firmwareupdate/gateway/:gatewayID', function(req, res)
 	});
 
 	// opens the form
-	data += myForm.open(); // will return: <form action="/signup"
-	// class="myform-class">
+	data += myForm.open(); 
 
 	data += "Enter version number to upgrade to...<br>";
 
@@ -562,7 +603,7 @@ app.post('/firmwareupdate/gateway/fire/:gatewayID', function(req, res)
 	var gatewayID = req.params.gatewayID;
 	var fwVersion = req.body.fwVersion;
 
-	console.log("Asking gatewayID:%s to update to fwVersion:%s", gatewayID,fwVersion);
+	console.log("Asking gatewayID:%s to update to fwVersion:%s", gatewayID, fwVersion);
 	var url = appEngineIP + "gateway/firmwareUpdate";
 	request.post({
 		url : url,
