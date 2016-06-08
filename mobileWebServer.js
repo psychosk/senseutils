@@ -290,6 +290,7 @@ app.post('/user/registerUser', function(req, res)
 							data += "  <a href=\"" + webserverIP + "livetracking/tracker/" + trackers[i].deviceID + "/0\">Stop live tracking</a>";
 							data += "  <a href=\"" + webserverIP + "stopsos/tracker/" + trackers[i].deviceID + "\">Stop SOS mode</a>";
 							data += "  <a href=\"" + webserverIP + "unlink/tracker/" + trackers[i].deviceID + "\">Unlink tracker</a>";
+							data += "  <a href=\"" + webserverIP + "firmwareupdate/tracker/" + trackers[i].deviceID + "\"> Firmware update</a>";
 							data += "<br>";
 
 						}
@@ -299,6 +300,14 @@ app.post('/user/registerUser', function(req, res)
 						data += "<input type=\"file\" name=\"sampleFile\" />";
 						data += "<br>Version: <input type=\"text\" name=\"version\" />";
 						data += "<br>MD5 checksum: <input type=\"text\" name=\"checksum\" />";
+						data += "<input type=\"submit\" value=\"Upload!\" />";
+						data += "</form>";
+
+						data += "<br><br><br><b>Upload tracker firmware:</b><br>";
+						data += "<form ref='uploadForm' id='uploadForm' action='" + webserverIP + "uploadTracker' method='post' encType=\"multipart/form-data\">"
+						data += "<input type=\"file\" name=\"sampleFile\" />";
+						data += "<br>Version: <input type=\"text\" name=\"version\" />";
+						data += "<br>Checksum: <input type=\"text\" name=\"checksum\" />";
 						data += "<input type=\"submit\" value=\"Upload!\" />";
 						data += "</form>";
 					} else
@@ -331,18 +340,20 @@ app.post('/user/registerUser', function(req, res)
 
 app.post('/upload', function(req, res)
 {
-	console.log("%j",req.files);
+	console.log("%j", req.files);
 	var sampleFile;
 	if (!req.files)
 	{
 		res.send('No files were uploaded.');
 		return;
 	}
-	if (!req.body.version){
+	if (!req.body.version)
+	{
 		res.send('No version number was provided.');
 		return;
 	}
-	if (!req.body.checksum){
+	if (!req.body.checksum)
+	{
 		res.send('No checksum was provided.');
 		return;
 	}
@@ -350,15 +361,52 @@ app.post('/upload', function(req, res)
 	sampleFile = req.files.sampleFile;
 	var version = req.body.version;
 	var checksum = req.body.checksum;
-	
-	fs.rename(sampleFile.path,'/var/tmp/gatewayfirmware.'+version, function(err)
+
+	fs.rename(sampleFile.path, '/var/tmp/gatewayfirmware.' + version, function(err)
 	{
 		if (err)
 		{
 			res.status(500).send(err);
 		} else
 		{
-			fs.writeFileSync('/var/tmp/gatewayfirmware.'+version+'.crc',checksum);
+			fs.writeFileSync('/var/tmp/gatewayfirmware.' + version + '.crc', checksum);
+			res.send('File uploaded with version number ' + version + ' and checksum ' + checksum);
+		}
+	});
+});
+
+app.post('/uploadTracker', function(req, res)
+{
+	// console.log("%j",req.files);
+	var sampleFile;
+	if (!req.files)
+	{
+		res.send('No files were uploaded.');
+		return;
+	}
+	if (!req.body.version)
+	{
+		res.send('No version number was provided.');
+		return;
+	}
+	if (!req.body.checksum)
+	{
+		res.send('No checksum was provided.');
+		return;
+	}
+
+	sampleFile = req.files.sampleFile;
+	var version = req.body.version;
+	var checksum = req.body.checksum;
+
+	fs.rename(sampleFile.path, '/var/tmp/trackerfirmware.' + version, function(err)
+	{
+		if (err)
+		{
+			res.status(500).send(err);
+		} else
+		{
+			fs.writeFileSync('/var/tmp/trackerfirmware.' + version + '.crc', checksum);
 			res.send('File uploaded with version number ' + version + ' and checksum ' + checksum);
 		}
 	});
@@ -576,17 +624,40 @@ app.get('/configure/gateway/:gatewayID', function(req, res)
 
 app.get('/firmwareupdate/gateway/:gatewayID', function(req, res)
 {
-	var data = "";
 	var gatewayID = req.params.gatewayID;
+
+	console.log("Asking gatewayID:%s to update firmware", gatewayID);
+	var url = appEngineIP + "gateway/firmwareUpdate";
+	request.post({
+		url : url,
+		json : {
+			gatewayID : gatewayID
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		res.send(util.format("error:%s,response:%j", error, response));
+	});
+	
+
+});
+
+app.get('/firmwareupdate/trackers/:userTrackerPairID', function(req, res)
+{
+	var data = "";
+	var userTrackerPairID = req.params.userTrackerPairID;
 	var Form = require('form-builder').Form;
 
 	var myForm = Form.create({
-		action : webserverIP + 'firmwareupdate/gateway/fire/' + gatewayID,
+		action : webserverIP + 'firmwareupdate/tracker/fire/' + userTrackerPairID,
 		method : 'post'
 	});
 
 	// opens the form
-	data += myForm.open(); 
+	data += myForm.open();
 
 	data += "Enter version number to upgrade to...<br>";
 
@@ -610,6 +681,28 @@ app.post('/firmwareupdate/gateway/fire/:gatewayID', function(req, res)
 		json : {
 			gatewayID : gatewayID,
 			version : fwVersion
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		res.send(util.format("error:%s,response:%j", error, response));
+	});
+});
+
+app.post('/firmwareupdate/tracker/fire/:userTrackerPairID', function(req, res)
+{
+	var userTrackerPairID = req.params.userTrackerPairID;
+	var fwVersion = req.body.fwVersion;
+
+	console.log("Asking userTrackerPairID:%s to update to fwVersion:%s", userTrackerPairID, fwVersion);
+	var url = appEngineIP + "tracker/firmware/upgrade";
+	request.post({
+		url : url,
+		json : {
+			TID : userTrackerPairID
 		},
 		headers : {
 			token : self.userToken,
