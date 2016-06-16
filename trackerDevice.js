@@ -179,7 +179,11 @@ function startPrompt(trackerID)
 				ALERT : "SOS",
 				Ops : "M",
 				TID : trackerID,
-				DateTime : getDate()
+				DateTime : getDate(),
+				LatLng : "100.1,100,2",
+				SpeedAlti : "0.0,0.0",
+				Battery : 355,
+				Net : "1",
 			};
 			console.log("Registering panic button press with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
 			request.post({
@@ -250,6 +254,12 @@ function startPrompt(trackerID)
 				TID : trackerID,
 				DateTime : getDate(),
 				ALERT : "OK1",
+				LatLng : "100.1,100,2",
+				SpeedAlti : "0.0,0.0",
+				Battery : 355,
+				Ops : "A",
+				Net : "1",
+				
 			};
 			console.log("Registering ack start live track with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
 			request.post({
@@ -274,6 +284,11 @@ function startPrompt(trackerID)
 				TID : trackerID,
 				DateTime : getDate(),
 				ALERT : "OK2",
+				LatLng : "100.1,100,2",
+				SpeedAlti : "0.0,0.0",
+				Battery : 355,
+				Ops : "A",
+				Net : "1",
 			};
 			console.log("Registering ack stop live track with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
 			request.post({
@@ -297,6 +312,11 @@ function startPrompt(trackerID)
 				TID : trackerID,
 				DateTime : getDate(),
 				ALERT : "OK3",
+				LatLng : "100.1,100,2",
+				SpeedAlti : "0.0,0.0",
+				Battery : 355,
+				Ops : "A",
+				Net : "1",
 			};
 			console.log("Registering ack stop sos with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
 			request.post({

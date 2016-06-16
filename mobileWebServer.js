@@ -276,6 +276,7 @@ app.post('/user/registerUser', function(req, res)
 							data += "<a href=\"" + webserverIP + "mountsdcard/camera/" + cameras[i].deviceID + "\">mount sd card</a>"
 							data += "<a href=\"" + webserverIP + "freespace/camera/" + cameras[i].deviceID + "\">Get free space on sd card</a><br>"
 							data += "<a href=\"" + webserverIP + "deletefile/camera/" + cameras[i].deviceID + "\">Delete file on sd card</a><br>"
+							data += "<a href=\"" + webserverIP + "firmwareupdate/camera/" + cameras[i].deviceID + "\"> Firmware update</a><br>"
 						}
 
 						data += "<b>Your linked trackers:</b><br>";
@@ -463,6 +464,48 @@ app.get('/freespace/camera/:cameraID', function(req, res)
 
 });
 
+app.get('/deletefile/camera/:cameraID', function(req, res)
+{
+	var data = "";
+	var cameraID = req.params.cameraID;
+	var Form = require('form-builder').Form;
+
+	var myForm = Form.create({
+		action : webserverIP + "deletefile/camera/fire/" + cameraID,
+		method : 'post'
+	});
+
+	// opens the form
+	data += myForm.open();
+
+	data += "Filename:";
+	data += myForm.text().attr('name', 'filename').render();
+	data += myForm.submit().attr('value', 'change').render();
+});
+
+app.post('/deletefile/camera/fire/:cameraID', function(req, res)
+{
+	var cameraID = req.params.cameraID;
+
+	var settingsURL = appEngineIP + "camera/freesdcardspace?cameraID=" + cameraID;
+	request.get({
+		url : settingsURL,
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		if (response && response.statusCode == 200)
+		{
+			res.send(body);
+		} else
+		{
+			res.send(util.format("Response:%j, body:%j", response, body));
+		}
+	});
+});
+
 /**
  * Change settings of gateway
  */
@@ -641,9 +684,30 @@ app.get('/firmwareupdate/gateway/:gatewayID', function(req, res)
 	{
 		res.send(util.format("error:%s,response:%j", error, response));
 	});
-	
 
 });
+
+app.get('/firmwareupdate/camera/:cameraID', function(req, res)
+		{
+			var cameraID = req.params.cameraID;
+
+			console.log("Asking cameraID:%s to update firmware", gatewayID);
+			var url = appEngineIP + "camera/firmware/upgrade";
+			request.post({
+				url : url,
+				json : {
+					cameraID : cameraID
+				},
+				headers : {
+					token : self.userToken,
+					userid : self.userID
+				}
+			}, function(error, response, body)
+			{
+				res.send(util.format("error:%s,response:%j", error, response));
+			});
+
+		});
 
 app.get('/firmwareupdate/trackers/:userTrackerPairID', function(req, res)
 {
