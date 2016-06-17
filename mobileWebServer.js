@@ -277,6 +277,7 @@ app.post('/user/registerUser', function(req, res)
 							data += "<a href=\"" + webserverIP + "freespace/camera/" + cameras[i].deviceID + "\">Get free space on sd card</a><br>"
 							data += "<a href=\"" + webserverIP + "deletefile/camera/" + cameras[i].deviceID + "\">Delete file on sd card</a><br>"
 							data += "<a href=\"" + webserverIP + "firmwareupdate/camera/" + cameras[i].deviceID + "\"> Firmware update</a><br>"
+							data += "<a href=\"" + webserverIP + "unlink/camera/" + cameras[i].deviceID + "\"> Unlink camera</a><br>"
 						}
 
 						data += "<b>Your linked trackers:</b><br>";
@@ -691,8 +692,30 @@ app.get('/firmwareupdate/camera/:cameraID', function(req, res)
 		{
 			var cameraID = req.params.cameraID;
 
-			console.log("Asking cameraID:%s to update firmware", gatewayID);
+			console.log("Asking cameraID:%s to update firmware", cameraID);
 			var url = appEngineIP + "camera/firmware/upgrade";
+			request.post({
+				url : url,
+				json : {
+					cameraID : cameraID
+				},
+				headers : {
+					token : self.userToken,
+					userid : self.userID
+				}
+			}, function(error, response, body)
+			{
+				res.send(util.format("error:%s,response:%j", error, response));
+			});
+
+		});
+
+app.get('/unlink/camera/:cameraID', function(req, res)
+		{
+			var cameraID = req.params.cameraID;
+
+			console.log("Asking cameraID:%s to unlink", cameraID);
+			var url = appEngineIP + "camera/unlink";
 			request.post({
 				url : url,
 				json : {
