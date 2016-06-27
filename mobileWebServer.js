@@ -312,6 +312,14 @@ app.post('/user/registerUser', function(req, res)
 						data += "<br>Checksum: <input type=\"text\" name=\"checksum\" />";
 						data += "<input type=\"submit\" value=\"Upload!\" />";
 						data += "</form>";
+
+						data += "<br><br><br><b>Upload camera firmware:</b><br>";
+						data += "<form ref='uploadForm' id='uploadForm' action='" + webserverIP + "uploadCamera' method='post' encType=\"multipart/form-data\">"
+						data += "<input type=\"file\" name=\"sampleFile\" />";
+						data += "<br>Version: <input type=\"text\" name=\"version\" />";
+						data += "<br>Checksum: <input type=\"text\" name=\"checksum\" />";
+						data += "<input type=\"submit\" value=\"Upload!\" />";
+						data += "</form>";
 					} else
 					{
 						console.log("Get failed!");
@@ -409,6 +417,80 @@ app.post('/uploadTracker', function(req, res)
 		} else
 		{
 			fs.writeFileSync('/var/tmp/trackerfirmware.' + version + '.crc', checksum);
+			res.send('File uploaded with version number ' + version + ' and checksum ' + checksum);
+		}
+	});
+});
+
+app.post('/uploadCameraKernel', function(req, res)
+{
+	// console.log("%j",req.files);
+	var sampleFile;
+	if (!req.files)
+	{
+		res.send('No files were uploaded.');
+		return;
+	}
+	if (!req.body.version)
+	{
+		res.send('No version number was provided.');
+		return;
+	}
+	if (!req.body.checksum)
+	{
+		res.send('No checksum was provided.');
+		return;
+	}
+
+	sampleFile = req.files.sampleFile;
+	var version = req.body.version;
+	var checksum = req.body.checksum;
+
+	fs.rename(sampleFile.path, '/var/tmp/camerakernelfirmware.' + version, function(err)
+	{
+		if (err)
+		{
+			res.status(500).send(err);
+		} else
+		{
+			fs.writeFileSync('/var/tmp/camerakernelfirmware.' + version + '.crc', checksum);
+			res.send('File uploaded with version number ' + version + ' and checksum ' + checksum);
+		}
+	});
+});
+
+app.post('/uploadCameraFilesystem', function(req, res)
+{
+	// console.log("%j",req.files);
+	var sampleFile;
+	if (!req.files)
+	{
+		res.send('No files were uploaded.');
+		return;
+	}
+	if (!req.body.version)
+	{
+		res.send('No version number was provided.');
+		return;
+	}
+	if (!req.body.checksum)
+	{
+		res.send('No checksum was provided.');
+		return;
+	}
+
+	sampleFile = req.files.sampleFile;
+	var version = req.body.version;
+	var checksum = req.body.checksum;
+
+	fs.rename(sampleFile.path, '/var/tmp/camerafilesystemfirmware.' + version, function(err)
+	{
+		if (err)
+		{
+			res.status(500).send(err);
+		} else
+		{
+			fs.writeFileSync('/var/tmp/camerafilesystemfirmware.' + version + '.crc', checksum);
 			res.send('File uploaded with version number ' + version + ' and checksum ' + checksum);
 		}
 	});
@@ -689,48 +771,48 @@ app.get('/firmwareupdate/gateway/:gatewayID', function(req, res)
 });
 
 app.get('/firmwareupdate/camera/:cameraID', function(req, res)
-		{
-			var cameraID = req.params.cameraID;
+{
+	var cameraID = req.params.cameraID;
 
-			console.log("Asking cameraID:%s to update firmware", cameraID);
-			var url = appEngineIP + "camera/firmware/upgrade";
-			request.post({
-				url : url,
-				json : {
-					cameraID : cameraID
-				},
-				headers : {
-					token : self.userToken,
-					userid : self.userID
-				}
-			}, function(error, response, body)
-			{
-				res.send(util.format("error:%s,response:%j", error, response));
-			});
+	console.log("Asking cameraID:%s to update firmware", cameraID);
+	var url = appEngineIP + "camera/firmware/upgrade";
+	request.post({
+		url : url,
+		json : {
+			cameraID : cameraID
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		res.send(util.format("error:%s,response:%j", error, response));
+	});
 
-		});
+});
 
 app.get('/unlink/camera/:cameraID', function(req, res)
-		{
-			var cameraID = req.params.cameraID;
+{
+	var cameraID = req.params.cameraID;
 
-			console.log("Asking cameraID:%s to unlink", cameraID);
-			var url = appEngineIP + "camera/unlink";
-			request.post({
-				url : url,
-				json : {
-					cameraID : cameraID
-				},
-				headers : {
-					token : self.userToken,
-					userid : self.userID
-				}
-			}, function(error, response, body)
-			{
-				res.send(util.format("error:%s,response:%j", error, response));
-			});
+	console.log("Asking cameraID:%s to unlink", cameraID);
+	var url = appEngineIP + "camera/unlink";
+	request.post({
+		url : url,
+		json : {
+			cameraID : cameraID
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		res.send(util.format("error:%s,response:%j", error, response));
+	});
 
-		});
+});
 
 app.get('/firmwareupdate/trackers/:userTrackerPairID', function(req, res)
 {
