@@ -313,8 +313,16 @@ app.post('/user/registerUser', function(req, res)
 						data += "<input type=\"submit\" value=\"Upload!\" />";
 						data += "</form>";
 
-						data += "<br><br><br><b>Upload camera firmware:</b><br>";
-						data += "<form ref='uploadForm' id='uploadForm' action='" + webserverIP + "uploadCamera' method='post' encType=\"multipart/form-data\">"
+						data += "<br><br><br><b>Upload camera kernel firmware:</b><br>";
+						data += "<form ref='uploadForm' id='uploadForm' action='" + webserverIP + "uploadCameraKernel' method='post' encType=\"multipart/form-data\">"
+						data += "<input type=\"file\" name=\"sampleFile\" />";
+						data += "<br>Version: <input type=\"text\" name=\"version\" />";
+						data += "<br>Checksum: <input type=\"text\" name=\"checksum\" />";
+						data += "<input type=\"submit\" value=\"Upload!\" />";
+						data += "</form>";
+						
+						data += "<br><br><br><b>Upload camera filesystem firmware:</b><br>";
+						data += "<form ref='uploadForm' id='uploadForm' action='" + webserverIP + "uploadCameraFilesystem' method='post' encType=\"multipart/form-data\">"
 						data += "<input type=\"file\" name=\"sampleFile\" />";
 						data += "<br>Version: <input type=\"text\" name=\"version\" />";
 						data += "<br>Checksum: <input type=\"text\" name=\"checksum\" />";
