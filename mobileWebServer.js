@@ -1092,6 +1092,28 @@ app.post('/configure/panicbutton/settings/:gatewayID/:deviceID', function(req, r
 	});
 });
 
+var getPanicButtonName = function(gatewayID, deviceID, callback)
+{
+	var settingsURL = appEngineIP + "panicbutton/getName?gatewayID=" + gatewayID + "&deviceID=" + deviceID;
+	// console.log("Going to %s",settingsURL);
+	request.get({
+		url : settingsURL,
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		if (response && response.statusCode == 200)
+		{
+			callback(null, body.name);
+		} else
+		{
+			callback(response);
+		}
+	});
+};
+
 /**
  * get the settings from the server
  */
@@ -1102,57 +1124,71 @@ app.get('/configure/panicbutton/:gatewayID/:deviceID', function(req, res)
 
 	var gatewayID = req.params.gatewayID;
 	var deviceID = req.params.deviceID;
-	var settingsURL = appEngineIP + "panicbutton/settings?gatewayID=" + gatewayID + "&deviceID=" + deviceID;
-	// console.log("Going to %s",settingsURL);
-	request.get({
-		url : settingsURL,
-		headers : {
-			token : self.userToken,
-			userid : self.userID
-		}
-	}, function(error, response, body)
+	getPanicButtonName(gatewayID, deviceID, function(err, panicButtonName)
 	{
-		var data = "";
-		if (response.statusCode == 200)
+		if (err)
+		{
+			res.status(400).json({
+				err : err
+			});
+			return;
+		}
+
+		var settingsURL = appEngineIP + "panicbutton/settings?gatewayID=" + gatewayID + "&deviceID=" + deviceID;
+		// console.log("Going to %s",settingsURL);
+		request.get({
+			url : settingsURL,
+			headers : {
+				token : self.userToken,
+				userid : self.userID
+			}
+		}, function(error, response, body)
 		{
 
-			var params = JSON.parse(body);
-			if (params.length == 0)
+			var data = "";
+			if (response.statusCode == 200)
 			{
-				data += "No configuration yet<br>";
+
+				var params = JSON.parse(body);
+				if (params.length == 0)
+				{
+					data += "No configuration yet<br>";
+				} else
+				{
+					data += JSON.stringify(params);
+					data += "<br> And name is :" + panicButtonName;
+				}
+
+				var Form = require('form-builder').Form;
+
+				var myForm = Form.create({
+					action : webserverIP + "configure/panicbutton/settings/" + gatewayID + "/" + deviceID,
+					method : 'post'
+				});
+
+				// opens the form
+				data += myForm.open();
+				data += "Name:";
+				data += myForm.text().attr('name', 'name').render() + "<br>";
+				data += "Emergency contact 1:";
+				data += myForm.text().attr('name', 'emergencyContact1').render() + "<br>";
+				data += "Emergency contact 2:";
+				data += myForm.text().attr('name', 'emergencyContact2').render() + "<br>";
+				data += "Emergency contact 3:";
+				data += myForm.text().attr('name', 'emergencyContact3').render() + "<br>";
+				data += "Emergency contact 4:";
+				data += myForm.text().attr('name', 'emergencyContact4').render() + "<br>";
+				data += "Emergency contact 5:";
+				data += myForm.text().attr('name', 'emergencyContact5').render() + "<br>";
+				data += myForm.submit().attr('value', 'change').render();
+
 			} else
 			{
-				data += JSON.stringify(params);
+				data += body;
 			}
+			res.send(data);
+		});
 
-			var Form = require('form-builder').Form;
-
-			var myForm = Form.create({
-				action : webserverIP + "configure/panicbutton/settings/" + gatewayID + "/" + deviceID,
-				method : 'post'
-			});
-
-			// opens the form
-			data += myForm.open();
-			data += "Name:";
-			data += myForm.text().attr('name', 'name').render() + "<br>";
-			data += "Emergency contact 1:";
-			data += myForm.text().attr('name', 'emergencyContact1').render() + "<br>";
-			data += "Emergency contact 2:";
-			data += myForm.text().attr('name', 'emergencyContact2').render() + "<br>";
-			data += "Emergency contact 3:";
-			data += myForm.text().attr('name', 'emergencyContact3').render() + "<br>";
-			data += "Emergency contact 4:";
-			data += myForm.text().attr('name', 'emergencyContact4').render() + "<br>";
-			data += "Emergency contact 5:";
-			data += myForm.text().attr('name', 'emergencyContact5').render() + "<br>";
-			data += myForm.submit().attr('value', 'change').render();
-
-		} else
-		{
-			data += body;
-		}
-		res.send(data);
 	});
 
 });
