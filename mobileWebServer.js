@@ -1054,7 +1054,8 @@ app.post('/configure/panicbutton/settings/:gatewayID/:deviceID', function(req, r
 			emergencyContact2 : emergencyContact2,
 			emergencyContact3 : emergencyContact3,
 			emergencyContact4 : emergencyContact4,
-			emergencyContact5 : emergencyContact5
+			emergencyContact5 : emergencyContact5,
+			name : name,
 		},
 		headers : {
 			token : self.userToken,
@@ -1064,27 +1065,7 @@ app.post('/configure/panicbutton/settings/:gatewayID/:deviceID', function(req, r
 	{
 		if (response && response.statusCode == 200)
 		{
-			request.post({
-				url : appEngineIP + "panicButton/setName",
-				form : {
-					gatewayID : gatewayID,
-					deviceID : deviceID,
-					name : name
-				},
-				headers : {
-					token : self.userToken,
-					userid : self.userID
-				}
-			}, function(error, response, body)
-			{
-				if (response && response.statusCode == 200)
-				{
-					res.send("Settings and device name set successfully!");
-				} else
-				{
-					res.send("Error setting name:%s", body);
-				}
-			});
+			res.send("Configuration set successfully!");
 		} else
 		{
 			res.send("Error setting configuration:%s", body);
