@@ -1619,7 +1619,7 @@ app
 									function(error, response, body)
 									{
 										console.log("Response status code is :%s", response.statusCode);
-										if (error == null && response.statusCode == 200)
+										if (error == null && response && response.statusCode == 200)
 										{
 											var locationData = JSON.parse(response.body);
 
