@@ -1107,7 +1107,7 @@ var getPanicButtonName = function(gatewayID, deviceID, callback)
 		if (response && response.statusCode == 200)
 		{
 			console.log("Got back %j from call",body);
-			callback(null, body.name);
+			callback(null, body);
 		} else
 		{
 			callback(response);
