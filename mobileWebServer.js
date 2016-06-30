@@ -320,7 +320,7 @@ app.post('/user/registerUser', function(req, res)
 						data += "<br>Checksum: <input type=\"text\" name=\"checksum\" />";
 						data += "<input type=\"submit\" value=\"Upload!\" />";
 						data += "</form>";
-						
+
 						data += "<br><br><br><b>Upload camera filesystem firmware:</b><br>";
 						data += "<form ref='uploadForm' id='uploadForm' action='" + webserverIP + "uploadCameraFilesystem' method='post' encType=\"multipart/form-data\">"
 						data += "<input type=\"file\" name=\"sampleFile\" />";
@@ -1043,8 +1043,6 @@ app.post('/configure/panicbutton/settings/:gatewayID/:deviceID', function(req, r
 	var emergencyContact3 = req.body.emergencyContact3;
 	var emergencyContact4 = req.body.emergencyContact4;
 	var emergencyContact5 = req.body.emergencyContact5;
-	var adminNumber = req.body.adminNumber;
-	var callTimeout = req.body.callTimeout;
 	var name = req.body.name;
 
 	console.log("Setting panic button configuration details to %s", JSON.stringify(req.body));
@@ -1056,10 +1054,7 @@ app.post('/configure/panicbutton/settings/:gatewayID/:deviceID', function(req, r
 			emergencyContact2 : emergencyContact2,
 			emergencyContact3 : emergencyContact3,
 			emergencyContact4 : emergencyContact4,
-			emergencyContact5 : emergencyContact5,
-			adminNumber : adminNumber,
-			callTimeout : callTimeout,
-			name : name,
+			emergencyContact5 : emergencyContact5
 		},
 		headers : {
 			token : self.userToken,
@@ -1069,7 +1064,27 @@ app.post('/configure/panicbutton/settings/:gatewayID/:deviceID', function(req, r
 	{
 		if (response && response.statusCode == 200)
 		{
-			res.send("Configuration set successfully!");
+			request.post({
+				url : appEngineIP + "panicButton/setName",
+				form : {
+					gatewayID : gatewayID,
+					deviceID : deviceID,
+					name : name
+				},
+				headers : {
+					token : self.userToken,
+					userid : self.userID
+				}
+			}, function(error, response, body)
+			{
+				if (response && response.statusCode == 200)
+				{
+					res.send("Settings and device name set successfully!");
+				} else
+				{
+					res.send("Error setting name:%s", body);
+				}
+			});
 		} else
 		{
 			res.send("Error setting configuration:%s", body);
@@ -1131,11 +1146,6 @@ app.get('/configure/panicbutton/:gatewayID/:deviceID', function(req, res)
 			data += myForm.text().attr('name', 'emergencyContact4').render() + "<br>";
 			data += "Emergency contact 5:";
 			data += myForm.text().attr('name', 'emergencyContact5').render() + "<br>";
-			data += "Admin number :";
-			data += myForm.text().attr('name', 'adminNumber').render() + "<br>";
-			data += "Call timeout:";
-			data += myForm.text().attr('name', 'callTimeout').render() + "<br>";
-
 			data += myForm.submit().attr('value', 'change').render();
 
 		} else
@@ -1330,7 +1340,6 @@ app.post('/configure/tracker/modifysettings/:userTrackerPairID', function(req, r
 	var emergencyContact3 = req.body.emergencyContact3;
 	var emergencyContact4 = req.body.emergencyContact4;
 	var emergencyContact5 = req.body.emergencyContact5;
-	var adminNumber = req.body.adminNumber;
 	var callTimeout = req.body.callTimeout;
 	var heartbeat = req.body.heartbeat;
 	var callInEnabled = req.body.callInEnabled;
@@ -1346,7 +1355,6 @@ app.post('/configure/tracker/modifysettings/:userTrackerPairID', function(req, r
 			emergencyContact3 : emergencyContact3,
 			emergencyContact4 : emergencyContact4,
 			emergencyContact5 : emergencyContact5,
-			adminNumber : adminNumber,
 			callTimeout : callTimeout,
 			heartbeat : heartbeat,
 			callInEnabled : callInEnabled,
@@ -1390,7 +1398,6 @@ app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 			var emergencyContact3 = responseParams.emergencyContact3;
 			var emergencyContact4 = responseParams.emergencyContact4;
 			var emergencyContact5 = responseParams.emergencyContact5;
-			var adminNumber = responseParams.adminNumber;
 			var callTimeout = responseParams.callTimeout;
 			var heartbeat = responseParams.heartbeat;
 			var callinEnabled = responseParams.callinEnabled;
@@ -1402,8 +1409,8 @@ app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 			} else
 			{
 				data += "Emergency contact 1:" + emergencyContact1 + "<br>emergency contact 2:" + emergencyContact2 + "<br>emergency contact 3:" + emergencyContact3 + "<br>emergency contact 4:"
-						+ emergencyContact4 + "<br>emergencyContact 5:" + emergencyContact5 + "<br>adminNumber:" + adminNumber + "<br>callTimeout:" + callTimeout + "<br>heartbeat:" + heartbeat
-						+ "<br>callinEnabled:" + callinEnabled + "<br>";
+						+ emergencyContact4 + "<br>emergencyContact 5:" + emergencyContact5 + "<br>callTimeout:" + callTimeout + "<br>heartbeat:" + heartbeat + "<br>callinEnabled:" + callinEnabled
+						+ "<br>";
 			}
 			var Form = require('form-builder').Form;
 
@@ -1429,8 +1436,6 @@ app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 			data += "Emergency contact 5:"
 			data += myForm.text().attr('name', 'emergencyContact5').render() + "<br>";
 			data += "Admin number:"
-			data += myForm.text().attr('name', 'adminNumber').render() + "<br>";
-			data += "Call timeout:"
 			data += myForm.text().attr('name', 'callTimeout').render() + "<br>";
 			data += "Heartbeat:"
 			data += myForm.text().attr('name', 'heartbeat').render() + "<br>";
@@ -1543,6 +1548,7 @@ app.get('/stopsos/tracker/:userTrackerPairID', function(req, res)
 
 app.get('/event/tracker/:userTrackerPairID', function(req, res)
 {
+
 	var userTrackerPairID = req.params.userTrackerPairID;
 	var settingsURL = appEngineIP + "tracker/events?userTrackerPairID=" + userTrackerPairID;
 	var request = require('request');
