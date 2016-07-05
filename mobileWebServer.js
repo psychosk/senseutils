@@ -278,6 +278,7 @@ app.post('/user/registerUser', function(req, res)
 							data += "<a href=\"" + webserverIP + "deletefile/camera/" + cameras[i].deviceID + "\">Delete file on sd card</a><br>"
 							data += "<a href=\"" + webserverIP + "firmwareupdate/camera/" + cameras[i].deviceID + "\"> Firmware update</a><br>"
 							data += "<a href=\"" + webserverIP + "unlink/camera/" + cameras[i].deviceID + "\"> Unlink camera</a><br>"
+							data += "<a href=\"" + webserverIP + "listsdcardfiles/camera/" + cameras[i].deviceID + "\"> List cloud & sd card files</a><br>"
 						}
 
 						data += "<b>Your linked trackers:</b><br>";
@@ -807,6 +808,29 @@ app.get('/unlink/camera/:cameraID', function(req, res)
 	console.log("Asking cameraID:%s to unlink", cameraID);
 	var url = appEngineIP + "camera/unlink";
 	request.post({
+		url : url,
+		json : {
+			cameraID : cameraID
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		res.send(util.format("error:%s,response:%j", error, response));
+	});
+
+});
+
+app.get('/listsdcardfiles/camera/:cameraID', function(req, res)
+{
+	var cameraID = req.params.cameraID;
+
+	console.log("Asking cameraID:%s to unlink", cameraID);
+	var url = appEngineIP + "camera/recordings?cameraID" + cameraID ;
+	
+	request.get({
 		url : url,
 		json : {
 			cameraID : cameraID
