@@ -828,7 +828,7 @@ app.get('/listsdcardfiles/camera/:cameraID', function(req, res)
 	var cameraID = req.params.cameraID;
 
 	console.log("Asking cameraID:%s to unlink", cameraID);
-	var url = appEngineIP + "camera/recordings?cameraID" + cameraID ;
+	var url = appEngineIP + "camera/recordings?cameraID=" + cameraID ;
 	
 	request.get({
 		url : url,
