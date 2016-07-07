@@ -1417,6 +1417,7 @@ app.post('/configure/tracker/modifysettings/:userTrackerPairID', function(req, r
 			callTimeout : callTimeout,
 			heartbeat : heartbeat,
 			callInEnabled : callInEnabled,
+			name : name,
 			tid : userTrackerPairID
 		},
 		headers : {
@@ -1484,6 +1485,8 @@ app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 
 			data += "Alter settings...<br>";
 
+			data += "Name:";
+			data += myForm.text().attr('name', 'name').render() + "<br>";			
 			data += "Emergency contact 1:"
 			data += myForm.text().attr('name', 'emergencyContact1').render() + "<br>";
 			data += "Emergency contact 2:"
@@ -1494,7 +1497,7 @@ app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 			data += myForm.text().attr('name', 'emergencyContact4').render() + "<br>";
 			data += "Emergency contact 5:"
 			data += myForm.text().attr('name', 'emergencyContact5').render() + "<br>";
-			data += "Admin number:"
+			data += "Call timeout:"
 			data += myForm.text().attr('name', 'callTimeout').render() + "<br>";
 			data += "Heartbeat:"
 			data += myForm.text().attr('name', 'heartbeat').render() + "<br>";
