@@ -1392,7 +1392,7 @@ app.get('/info/smartplug/:gatewayID/:deviceID', function(req, res)
 
 app.post('/configure/tracker/modifysettings/:userTrackerPairID', function(req, res)
 {
-	global.logger.log("Received body:%j", req.body);
+	console.log("Received body:%j", req.body);
 
 	var userTrackerPairID = req.params.userTrackerPairID;
 
