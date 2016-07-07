@@ -129,7 +129,8 @@ app.post('/user/registerUser', function(req, res)
 	} else if (action === 'login')
 	{
 		var loginURL = appEngineIP + "user/login";
-		console.log("Hitting %s", loginURL);
+		console.log("Hitting %s, with email:%s,password:%s", loginURL,emailID,password);
+		
 		request.post({
 			url : loginURL,
 			form : {
@@ -143,14 +144,12 @@ app.post('/user/registerUser', function(req, res)
 				var responseParams = JSON.parse(body);
 				self.userToken = responseParams.token;
 				self.userID = responseParams.id;
-				// console.log("Login accepted, token is %s and userID is %s",
-				// self.userToken, self.userID);
+				console.log("Login accepted, token is %s and userID is %s",self.userToken, self.userID);
 				sessionData[responseParams.id] = {
 					token : responseParams.token
 				};
 
-				// console.log("Session data now looks like %s",
-				// JSON.stringify(sessionData));
+				console.log("Session data now looks like %s",JSON.stringify(sessionData));
 
 				var getDevicesUrl = appEngineIP + "user/alldevices";
 				var request2 = require('request');
