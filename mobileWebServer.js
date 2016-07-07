@@ -129,8 +129,8 @@ app.post('/user/registerUser', function(req, res)
 	} else if (action === 'login')
 	{
 		var loginURL = appEngineIP + "user/login";
-		console.log("Hitting %s, with email:%s,password:%s", loginURL,emailID,password);
-		
+		console.log("Hitting %s, with email:%s,password:%s", loginURL, emailID, password);
+
 		request.post({
 			url : loginURL,
 			form : {
@@ -144,12 +144,12 @@ app.post('/user/registerUser', function(req, res)
 				var responseParams = JSON.parse(body);
 				self.userToken = responseParams.token;
 				self.userID = responseParams.id;
-				console.log("Login accepted, token is %s and userID is %s",self.userToken, self.userID);
+				console.log("Login accepted, token is %s and userID is %s", self.userToken, self.userID);
 				sessionData[responseParams.id] = {
 					token : responseParams.token
 				};
 
-				console.log("Session data now looks like %s",JSON.stringify(sessionData));
+				console.log("Session data now looks like %s", JSON.stringify(sessionData));
 
 				var getDevicesUrl = appEngineIP + "user/alldevices";
 				var request2 = require('request');
@@ -534,32 +534,32 @@ app.get('/mountsdcard/camera/:cameraID', function(req, res)
 });
 
 app.get('/unmountsdcard/camera/:cameraID', function(req, res)
+{
+	var cameraID = req.params.cameraID;
+
+	var settingsURL = appEngineIP + "camera/mountsdcard";
+	request.post({
+		url : settingsURL,
+		json : {
+			cameraID : cameraID,
+			state : 0
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		if (response && response.statusCode == 200)
 		{
-			var cameraID = req.params.cameraID;
+			res.send("SD card unmounted!");
+		} else
+		{
+			res.send(util.format("Response:%j, body:%j", response, body));
+		}
+	});
 
-			var settingsURL = appEngineIP + "camera/mountsdcard";
-			request.post({
-				url : settingsURL,
-				json : {
-					cameraID : cameraID,
-					state : 0
-				},
-				headers : {
-					token : self.userToken,
-					userid : self.userID
-				}
-			}, function(error, response, body)
-			{
-				if (response && response.statusCode == 200)
-				{
-					res.send("SD card unmounted!");
-				} else
-				{
-					res.send(util.format("Response:%j, body:%j", response, body));
-				}
-			});
-
-		});
+});
 
 app.get('/freespace/camera/:cameraID', function(req, res)
 {
@@ -857,8 +857,8 @@ app.get('/listsdcardfiles/camera/:cameraID', function(req, res)
 	var cameraID = req.params.cameraID;
 
 	console.log("Asking cameraID:%s to unlink", cameraID);
-	var url = appEngineIP + "camera/recordings?cameraID=" + cameraID ;
-	
+	var url = appEngineIP + "camera/recordings?cameraID=" + cameraID;
+
 	request.get({
 		url : url,
 		json : {
@@ -1392,6 +1392,8 @@ app.get('/info/smartplug/:gatewayID/:deviceID', function(req, res)
 
 app.post('/configure/tracker/modifysettings/:userTrackerPairID', function(req, res)
 {
+	global.logger.log("Received body:%j", req.body);
+
 	var userTrackerPairID = req.params.userTrackerPairID;
 
 	var emergencyContact1 = req.body.emergencyContact1;
@@ -1404,22 +1406,24 @@ app.post('/configure/tracker/modifysettings/:userTrackerPairID', function(req, r
 	var callInEnabled = req.body.callInEnabled;
 	var name = req.body.name;
 
-	console.log("Setting tracker configuration details to %s", JSON.stringify(req.body));
+	var settings = {
+		emergencyContact1 : emergencyContact1,
+		emergencyContact2 : emergencyContact2,
+		emergencyContact3 : emergencyContact3,
+		emergencyContact4 : emergencyContact4,
+		emergencyContact5 : emergencyContact5,
+		callTimeout : callTimeout,
+		heartbeat : heartbeat,
+		callInEnabled : callInEnabled,
+		name : name,
+		tid : userTrackerPairID
+	};
+
+	console.log("Setting tracker configuration details to %j", settings);
 	var settingsURL = appEngineIP + "tracker/settings";
 	request.post({
 		url : settingsURL,
-		json : {
-			emergencyContact1 : emergencyContact1,
-			emergencyContact2 : emergencyContact2,
-			emergencyContact3 : emergencyContact3,
-			emergencyContact4 : emergencyContact4,
-			emergencyContact5 : emergencyContact5,
-			callTimeout : callTimeout,
-			heartbeat : heartbeat,
-			callInEnabled : callInEnabled,
-			name : name,
-			tid : userTrackerPairID
-		},
+		json : settings,
 		headers : {
 			token : self.userToken,
 			userid : self.userID
@@ -1486,7 +1490,7 @@ app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 			data += "Alter settings...<br>";
 
 			data += "Name:";
-			data += myForm.text().attr('name', 'name').render() + "<br>";			
+			data += myForm.text().attr('name', 'name').render() + "<br>";
 			data += "Emergency contact 1:"
 			data += myForm.text().attr('name', 'emergencyContact1').render() + "<br>";
 			data += "Emergency contact 2:"
