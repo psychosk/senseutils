@@ -274,6 +274,7 @@ app.post('/user/registerUser', function(req, res)
 						{
 							data += "Name :" + cameras[i].cameraName + ", CameraID:" + cameras[i].deviceID;
 							data += "<a href=\"" + webserverIP + "mountsdcard/camera/" + cameras[i].deviceID + "\">mount sd card</a>"
+							data += "<a href=\"" + webserverIP + "unmountsdcard/camera/" + cameras[i].deviceID + "\">unmount sd card</a>"
 							data += "<a href=\"" + webserverIP + "freespace/camera/" + cameras[i].deviceID + "\">Get free space on sd card</a><br>"
 							data += "<a href=\"" + webserverIP + "deletefile/camera/" + cameras[i].deviceID + "\">Delete file on sd card</a><br>"
 							data += "<a href=\"" + webserverIP + "firmwareupdate/camera/" + cameras[i].deviceID + "\"> Firmware update</a><br>"
@@ -513,7 +514,8 @@ app.get('/mountsdcard/camera/:cameraID', function(req, res)
 	request.post({
 		url : settingsURL,
 		json : {
-			cameraID : cameraID
+			cameraID : cameraID,
+			state : 1
 		},
 		headers : {
 			token : self.userToken,
@@ -531,6 +533,34 @@ app.get('/mountsdcard/camera/:cameraID', function(req, res)
 	});
 
 });
+
+app.get('/unmountsdcard/camera/:cameraID', function(req, res)
+		{
+			var cameraID = req.params.cameraID;
+
+			var settingsURL = appEngineIP + "camera/mountsdcard";
+			request.post({
+				url : settingsURL,
+				json : {
+					cameraID : cameraID,
+					state : 0
+				},
+				headers : {
+					token : self.userToken,
+					userid : self.userID
+				}
+			}, function(error, response, body)
+			{
+				if (response && response.statusCode == 200)
+				{
+					res.send("SD card unmounted!");
+				} else
+				{
+					res.send(util.format("Response:%j, body:%j", response, body));
+				}
+			});
+
+		});
 
 app.get('/freespace/camera/:cameraID', function(req, res)
 {
