@@ -1464,7 +1464,8 @@ app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 			var emergencyContact5 = responseParams.emergencyContact5;
 			var callTimeout = responseParams.callTimeout;
 			var heartbeat = responseParams.heartbeat;
-			var callinEnabled = responseParams.callinEnabled;
+			var callinEnabled = responseParams.callInEnabled;
+			var name = responseParams.name;
 
 			var data = "Existing settings...<br>"
 			if (emergencyContact1 == null)
@@ -1472,7 +1473,7 @@ app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 				data += "No existing settings...";
 			} else
 			{
-				data += "Emergency contact 1:" + emergencyContact1 + "<br>emergency contact 2:" + emergencyContact2 + "<br>emergency contact 3:" + emergencyContact3 + "<br>emergency contact 4:"
+				data += "Name:" + name + "<br>Emergency contact 1:" + emergencyContact1 + "<br>emergency contact 2:" + emergencyContact2 + "<br>emergency contact 3:" + emergencyContact3 + "<br>emergency contact 4:"
 						+ emergencyContact4 + "<br>emergencyContact 5:" + emergencyContact5 + "<br>callTimeout:" + callTimeout + "<br>heartbeat:" + heartbeat + "<br>callinEnabled:" + callinEnabled
 						+ "<br>";
 			}
