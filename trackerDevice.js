@@ -21,7 +21,7 @@ var appEngineIP = "app.smartsense.co.in:7322/"
 
 var agentOptions = {};
 
-var SSL_ENABLED = 0;
+var SSL_ENABLED = 1;
 var HTTPS_PREFIX = "";
 if (SSL_ENABLED)
 {
@@ -259,7 +259,7 @@ function startPrompt(trackerID)
 				Battery : 355,
 				Ops : "A",
 				Net : "1",
-				
+
 			};
 			console.log("Registering ack start live track with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
 			request.post({
@@ -341,6 +341,11 @@ function startPrompt(trackerID)
 				TID : trackerID,
 				DateTime : getDate(),
 				ALERT : "OK4",
+				LatLng : "100.1,100,2",
+				SpeedAlti : "0.0,0.0",
+				Battery : 355,
+				Ops : "A",
+				Net : "1",
 			};
 			console.log("Registering ack get loc with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
 			request.post({
@@ -365,6 +370,11 @@ function startPrompt(trackerID)
 				TID : trackerID,
 				DateTime : getDate(),
 				ALERT : "OK5",
+				LatLng : "100.1,100,2",
+				SpeedAlti : "0.0,0.0",
+				Battery : 355,
+				Ops : "A",
+				Net : "1",
 			};
 			console.log("Registering ack config with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
 			request.post({
