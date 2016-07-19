@@ -57,7 +57,7 @@ console.log("USER LOGIN.....");
 console.log("Executing POST:%s", userLoginURL);
 request.post({
 	url : userLoginURL,
-	form : {
+	json : {
 		email : email,
 		password : password
 	},
@@ -86,7 +86,7 @@ request.post({
 				console.log("Initialization accepted, TRACKER REGISTRATION with userID:%s on URL:%s with token:%s", self.userID, registerURL, self.userToken);
 				request.post({
 					url : registerURL,
-					form : {
+					json : {
 						phoneNumber : phoneNumber,
 						imei : IMEI,
 						operator : operator
@@ -110,7 +110,7 @@ request.post({
 
 							request.post({
 								url : loginURL,
-								form : {
+								json : {
 									TID : result.TID
 								},
 								agentOptions : agentOptions
@@ -188,7 +188,7 @@ function startPrompt(trackerID)
 			console.log("Registering %s with cloud on URL:%s and options:%s", command, dataURL, JSON.stringify(opts));
 			request.post({
 				url : dataURL,
-				form : opts,
+				json : opts,
 				agentOptions : agentOptions
 			}, function(error, response, body)
 			{
@@ -234,7 +234,7 @@ function startPrompt(trackerID)
 				console.log("Registering location update with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
 				request.post({
 					url : dataURL,
-					form : opts,
+					json: opts,
 					agentOptions : agentOptions
 				}, function(error, response, body)
 				{
