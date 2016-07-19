@@ -66,7 +66,7 @@ request.post({
 {
 	if (!error && response.statusCode == 200)
 	{
-		var params = JSON.parse(response.body);
+		var params = response.body;
 		self.userToken = params.token;
 		self.userID = params.id;
 		console.log("User login accepted.")
