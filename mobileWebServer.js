@@ -218,11 +218,16 @@ app.post('/user/registerUser', function(req, res)
 
 						data += "<html><head>";
 
-						data += "" + "<script>" + "var messages = []; function updateMessage(message) {"
-								+ " messages.push(message); document.getElementById('messages').innerHTML = messages.toString() ;" + "}" + " var ws = new WebSocket('" + appWSEngineIP + "?userID="
-								+ self.userID + "&token=" + self.userToken + "'); " + " ws.onmessage = function (event) { " + " updateMessage(event.data); " + " }; " + " </script></head><body>";
+//						data += "" + "<script>" + "var messages = []; function updateMessage(message) {"
+//								+ " messages.push(message); document.getElementById('messages').innerHTML = messages.toString() ;" + "}" + " var ws = new WebSocket('" + appWSEngineIP + "?userID="
+//								+ self.userID + "&token=" + self.userToken + "'); " + " ws.onmessage = function (event) { " + " updateMessage(event.data); " + " }; " + " </script></head><body>";
 
-						data += "<strong>Messages (available only on this screen): </strong><div id='messages'></div><br>";
+//						var messages = []; function updateMessage(message) { messages.push(message); document.getElementById('messages').innerHTML = messages.toString() ;} var ws = new WebSocket('ws://localhost:7333/?userID=55&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE0NjkxNjM4Mjk2NTEsImlkIjo1NX0.gdprmSokUfJjHfWlURozaxsqgL2hICfkgsQbNzl7bRk');  ws.onmessage = function (event) {  updateMessage(event.data);  };  
+						
+//						data += "<script>var messages = []; function updateMessage(message) {"
+//							    + " messages.push(message); document.getElementById('messages').innerHTML = messages.toString() ;" + "}" + " var mqtt = require('mqtt');var client = mqtt.connect('mqtt://app.smartsense.co.in'); client.subscribe('userUpdates/55dev'); client.on('message', function(topic,message){ updateMessage('Received message:' + message + ' from topic:' + topic)});</script></head><body>";
+//												
+//						data += "<strong>Messages (available only on this screen): </strong><div id='messages'></div><br>";
 
 						data += "<b>Your linked gateways (note that the gateway must be connected in order for these commands to work):</b><br>";
 

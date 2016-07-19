@@ -75,7 +75,7 @@ request.post({
 		// kick off registration
 		request.post({
 			url : initURL,
-			form : {
+			json : {
 				imei : IMEI
 			},
 			agentOptions : agentOptions
@@ -166,17 +166,17 @@ function getDate()
 function startPrompt(trackerID)
 {
 	console.log("your wish is my command....");
-	console.log("Allowable actions:panic,location,ackStartLiveTrack,ackStopLiveTrack,ackStopSOS,ackGetLoc,ackConfig");
+	console.log("Allowable actions:IVR,IVF,location,ackStartLiveTrack,ackStopLiveTrack,ackStopSOS,ackGetLoc,ackConfig");
 	prompt.start();
 
 	prompt.get([ 'command' ], function(err, result)
 	{
 		console.log("command:%s", result.command);
 		var command = result.command;
-		if (command === 'panic')
+		if (command === 'IVR' || command === 'IVF')
 		{
 			var opts = {
-				ALERT : "SOS",
+				ALERT : command,
 				Ops : "M",
 				TID : trackerID,
 				DateTime : getDate(),
@@ -185,7 +185,7 @@ function startPrompt(trackerID)
 				Battery : 355,
 				Net : "1",
 			};
-			console.log("Registering panic button press with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
+			console.log("Registering %s with cloud on URL:%s and options:%s", command, dataURL, JSON.stringify(opts));
 			request.post({
 				url : dataURL,
 				form : opts,
@@ -210,7 +210,7 @@ function startPrompt(trackerID)
 				output : process.stdout
 			});
 
-			rl.question("Please type in location:LAT,LONG,SPEED,ALTI,isLocationGPSDerived(0 or 1),BLV(battery level ie 345)\n", function(answer)
+			rl.question("Please type in location:LAT,LONG,SPEED,ALTI,isLocationGPSDerived(0 or 1),BLV(battery level ie 345),REG/HBT\n", function(answer)
 			{
 				rl.close();
 				var params = answer.split(",");
@@ -224,7 +224,7 @@ function startPrompt(trackerID)
 					LatLng : params[0] + "," + params[1],
 					SpeedAlti : params[2] + "," + params[3],
 					DateTime : getDate(),
-					ALERT : "REG",
+					ALERT : params[6],
 					Battery : params[5],
 					Ops : "A",
 					Net : gpsDerived,
