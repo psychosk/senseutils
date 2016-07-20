@@ -9,10 +9,11 @@ var phoneNumber = args[1];
 var email = args[2];
 var password = args[3];
 var operator = args[4];
+var trackerName = args[5];
 
-if (IMEI == null || phoneNumber == null || email == null || password == null || operator == null)
+if (IMEI == null || phoneNumber == null || email == null || password == null || operator == null || trackerName == null)
 {
-	console.log("args:IMEI phoneNumber email password operator(airtel,idea)");
+	console.log("args:IMEI phoneNumber email password operator(airtel,idea) trackerName");
 	process.exit(1);
 }
 
@@ -70,76 +71,54 @@ request.post({
 		self.userToken = params.token;
 		self.userID = params.id;
 		console.log("User login accepted.")
-		console.log("TRACKER INITIALIZATION.....");
-		console.log("Executing POST:%s", initURL);
-		// kick off registration
+		console.log("Initialization accepted, TRACKER REGISTRATION with userID:%s on URL:%s with token:%s", self.userID, registerURL, self.userToken);
 		request.post({
-			url : initURL,
+			url : registerURL,
 			json : {
-				imei : IMEI
+				phoneNumber : phoneNumber,
+				imei : IMEI,
+				operator : operator,
+				trackerName : trackerName
+			},
+			headers : {
+				userid : self.userID,
+				token : self.userToken
 			},
 			agentOptions : agentOptions
 		}, function(error, response, body)
 		{
 			if (!error && response.statusCode == 200)
 			{
-				console.log("Initialization accepted, TRACKER REGISTRATION with userID:%s on URL:%s with token:%s", self.userID, registerURL, self.userToken);
-				request.post({
-					url : registerURL,
-					json : {
-						phoneNumber : phoneNumber,
-						imei : IMEI,
-						operator : operator
-					},
-					headers : {
-						userid : self.userID,
-						token : self.userToken
-					},
-					agentOptions : agentOptions
-				}, function(error, response, body)
+				var userTrackerPairID = body.userTrackerPairID;
+				console.log("Registration accepted");
+				console.log("Please type in the TID you get via SMS on the phone number:%s", phoneNumber);
+				prompt.start();
+
+				prompt.get([ 'TID' ], function(err, result)
 				{
-					if (!error && response.statusCode == 200)
-					{
-						var userTrackerPairID = body.userTrackerPairID;
-						console.log("Registration accepted");
-						console.log("Please type in the TID you get via SMS on the phone number:%s", phoneNumber);
-						prompt.start();
 
-						prompt.get([ 'TID' ], function(err, result)
+					request.post({
+						url : loginURL,
+						json : {
+							TID : result.TID
+						},
+						agentOptions : agentOptions
+					}, function(error, response, body)
+					{
+						if (!error && response.statusCode == 200)
 						{
-
-							request.post({
-								url : loginURL,
-								json : {
-									TID : result.TID
-								},
-								agentOptions : agentOptions
-							}, function(error, response, body)
-							{
-								if (!error && response.statusCode == 200)
-								{
-									// var responseParams =
-									// JSON.parse(response.body);
-									console.log("Login successful!");
-									startPrompt(result.TID);
-								} else
-								{
-									console.log("Login didn't work");
-									console.log("ERROR:%s", error);
-									console.log("STATUSCODE:%s", response && response.statusCode);
-									console.log("BODY:%s", response.body && response.body);
-								}
-							});
-						});
-
-					} else
-					{
-						console.log("Registration didn't work");
-						console.log("ERROR:%s", error);
-						console.log("STATUSCODE:%s", response && response.statusCode);
-						console.log("BODY:%s", response.body && response.body);
-					}
-
+							// var responseParams =
+							// JSON.parse(response.body);
+							console.log("Login successful!");
+							startPrompt(result.TID);
+						} else
+						{
+							console.log("Login didn't work");
+							console.log("ERROR:%s", error);
+							console.log("STATUSCODE:%s", response && response.statusCode);
+							console.log("BODY:%s", response.body && response.body);
+						}
+					});
 				});
 			} else
 			{
@@ -149,9 +128,9 @@ request.post({
 				console.log("BODY:%s", response.body && response.body);
 			}
 		});
-
 	} else
 	{
+		console.log("Registration didn't work");
 		console.log("ERROR:%s", error);
 		console.log("STATUSCODE:%s", response && response.statusCode);
 		console.log("BODY:%s", response.body && response.body);
@@ -234,7 +213,7 @@ function startPrompt(trackerID)
 				console.log("Registering location update with cloud on URL:%s and options:%s", dataURL, JSON.stringify(opts));
 				request.post({
 					url : dataURL,
-					json: opts,
+					json : opts,
 					agentOptions : agentOptions
 				}, function(error, response, body)
 				{
