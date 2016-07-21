@@ -880,7 +880,7 @@ app.get('/listsdcardfiles/camera/:cameraID', function(req, res)
 
 });
 
-app.get('/firmwareupdate/trackers/:userTrackerPairID', function(req, res)
+app.get('/firmwareupdate/tracker/:userTrackerPairID', function(req, res)
 {
 	var data = "";
 	var userTrackerPairID = req.params.userTrackerPairID;

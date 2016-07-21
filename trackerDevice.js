@@ -87,6 +87,7 @@ request.post({
 			agentOptions : agentOptions
 		}, function(error, response, body)
 		{
+			console.log("RESPONSE IS %j",response);
 			if (!error && response.statusCode == 200)
 			{
 				var userTrackerPairID = body.userTrackerPairID;
