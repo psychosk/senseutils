@@ -657,7 +657,7 @@ app.get('/deletefile/camera/:cameraID', function(req, res)
 
 	data += "Filename:";
 	data += myForm.text().attr('name', 'filename').render();
-	data += myForm.submit().attr('value', 'change').render();
+	data += myForm.submit().attr('value', 'delete').render();
 	
 	res.send(data);
 });
