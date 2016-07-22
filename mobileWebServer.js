@@ -218,16 +218,39 @@ app.post('/user/registerUser', function(req, res)
 
 						data += "<html><head>";
 
-//						data += "" + "<script>" + "var messages = []; function updateMessage(message) {"
-//								+ " messages.push(message); document.getElementById('messages').innerHTML = messages.toString() ;" + "}" + " var ws = new WebSocket('" + appWSEngineIP + "?userID="
-//								+ self.userID + "&token=" + self.userToken + "'); " + " ws.onmessage = function (event) { " + " updateMessage(event.data); " + " }; " + " </script></head><body>";
+						// data += "" + "<script>" + "var messages = [];
+						// function updateMessage(message) {"
+						// + " messages.push(message);
+						// document.getElementById('messages').innerHTML =
+						// messages.toString() ;" + "}" + " var ws = new
+						// WebSocket('" + appWSEngineIP + "?userID="
+						// + self.userID + "&token=" + self.userToken + "'); " +
+						// " ws.onmessage = function (event) { " + "
+						// updateMessage(event.data); " + " }; " + "
+						// </script></head><body>";
 
-//						var messages = []; function updateMessage(message) { messages.push(message); document.getElementById('messages').innerHTML = messages.toString() ;} var ws = new WebSocket('ws://localhost:7333/?userID=55&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE0NjkxNjM4Mjk2NTEsImlkIjo1NX0.gdprmSokUfJjHfWlURozaxsqgL2hICfkgsQbNzl7bRk');  ws.onmessage = function (event) {  updateMessage(event.data);  };  
-						
-//						data += "<script>var messages = []; function updateMessage(message) {"
-//							    + " messages.push(message); document.getElementById('messages').innerHTML = messages.toString() ;" + "}" + " var mqtt = require('mqtt');var client = mqtt.connect('mqtt://app.smartsense.co.in'); client.subscribe('userUpdates/55dev'); client.on('message', function(topic,message){ updateMessage('Received message:' + message + ' from topic:' + topic)});</script></head><body>";
-//												
-//						data += "<strong>Messages (available only on this screen): </strong><div id='messages'></div><br>";
+						// var messages = []; function updateMessage(message) {
+						// messages.push(message);
+						// document.getElementById('messages').innerHTML =
+						// messages.toString() ;} var ws = new
+						// WebSocket('ws://localhost:7333/?userID=55&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE0NjkxNjM4Mjk2NTEsImlkIjo1NX0.gdprmSokUfJjHfWlURozaxsqgL2hICfkgsQbNzl7bRk');
+						// ws.onmessage = function (event) {
+						// updateMessage(event.data); };
+
+						// data += "<script>var messages = []; function
+						// updateMessage(message) {"
+						// + " messages.push(message);
+						// document.getElementById('messages').innerHTML =
+						// messages.toString() ;" + "}" + " var mqtt =
+						// require('mqtt');var client =
+						// mqtt.connect('mqtt://app.smartsense.co.in');
+						// client.subscribe('userUpdates/55dev');
+						// client.on('message', function(topic,message){
+						// updateMessage('Received message:' + message + ' from
+						// topic:' + topic)});</script></head><body>";
+						//												
+						// data += "<strong>Messages (available only on this
+						// screen): </strong><div id='messages'></div><br>";
 
 						data += "<b>Your linked gateways (note that the gateway must be connected in order for these commands to work):</b><br>";
 
@@ -284,6 +307,7 @@ app.post('/user/registerUser', function(req, res)
 							data += "<a href=\"" + webserverIP + "firmwareupdate/camera/" + cameras[i].deviceID + "\"> Firmware update</a><br>"
 							data += "<a href=\"" + webserverIP + "unlink/camera/" + cameras[i].deviceID + "\"> Unlink camera</a><br>"
 							data += "<a href=\"" + webserverIP + "listsdcardfiles/camera/" + cameras[i].deviceID + "\"> List cloud & sd card files</a><br>"
+							data += "<a href=\"" + webserverIP + "saveconfig/camera/" + cameras[i].deviceID + "\"> Save config</a><br>"
 						}
 
 						data += "<b>Your linked trackers:</b><br>";
@@ -508,6 +532,33 @@ app.post('/uploadCameraFilesystem', function(req, res)
 			res.send('File uploaded with version number ' + version + ' and checksum ' + checksum);
 		}
 	});
+});
+
+app.get('/saveconfig/camera/:cameraID', function(req, res)
+{
+	var cameraID = req.params.cameraID;
+
+	var settingsURL = appEngineIP + "camera/saveSettings";
+	request.post({
+		url : settingsURL,
+		json : {
+			cameraID : cameraID
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		if (response && response.statusCode == 200)
+		{
+			res.send("Settings saved!");
+		} else
+		{
+			res.send(util.format("Response:%j, body:%j", response, body));
+		}
+	});
+
 });
 
 app.get('/mountsdcard/camera/:cameraID', function(req, res)
@@ -1478,9 +1529,9 @@ app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 				data += "No existing settings...";
 			} else
 			{
-				data += "Name:" + name + "<br>Emergency contact 1:" + emergencyContact1 + "<br>emergency contact 2:" + emergencyContact2 + "<br>emergency contact 3:" + emergencyContact3 + "<br>emergency contact 4:"
-						+ emergencyContact4 + "<br>emergencyContact 5:" + emergencyContact5 + "<br>callTimeout:" + callTimeout + "<br>heartbeat:" + heartbeat + "<br>callinEnabled:" + callinEnabled
-						+ "<br>";
+				data += "Name:" + name + "<br>Emergency contact 1:" + emergencyContact1 + "<br>emergency contact 2:" + emergencyContact2 + "<br>emergency contact 3:" + emergencyContact3
+						+ "<br>emergency contact 4:" + emergencyContact4 + "<br>emergencyContact 5:" + emergencyContact5 + "<br>callTimeout:" + callTimeout + "<br>heartbeat:" + heartbeat
+						+ "<br>callinEnabled:" + callinEnabled + "<br>";
 			}
 			var Form = require('form-builder').Form;
 
