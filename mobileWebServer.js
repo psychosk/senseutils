@@ -663,10 +663,16 @@ app.get('/deletefile/camera/:cameraID', function(req, res)
 app.post('/deletefile/camera/fire/:cameraID', function(req, res)
 {
 	var cameraID = req.params.cameraID;
-
-	var settingsURL = appEngineIP + "camera/freesdcardspace?cameraID=" + cameraID;
-	request.get({
+	var name = req.body.filename;
+	
+	var settingsURL = appEngineIP + "camera/deleterecording";
+	request.post({
 		url : settingsURL,
+		json : {
+			key : name,
+			location : 'sdcard',
+			cameraID : cameraID
+		},
 		headers : {
 			token : self.userToken,
 			userid : self.userID
@@ -675,7 +681,7 @@ app.post('/deletefile/camera/fire/:cameraID', function(req, res)
 	{
 		if (response && response.statusCode == 200)
 		{
-			res.send(body);
+			res.send("File deleted successfully!");
 		} else
 		{
 			res.send(util.format("Response:%j, body:%j", response, body));
