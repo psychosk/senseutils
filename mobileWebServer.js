@@ -658,6 +658,8 @@ app.get('/deletefile/camera/:cameraID', function(req, res)
 	data += "Filename:";
 	data += myForm.text().attr('name', 'filename').render();
 	data += myForm.submit().attr('value', 'change').render();
+	
+	res.send(data);
 });
 
 app.post('/deletefile/camera/fire/:cameraID', function(req, res)
