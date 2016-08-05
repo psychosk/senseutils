@@ -314,7 +314,7 @@ app.post('/user/registerUser', function(req, res)
 							data += "<a href=\"" + webserverIP + "mirror/camera/" + cameras[i].deviceID + "/3\">Vertical of mirror image</a> "
 						}
 
-						data += "<b>Your linked trackers:</b><br>";
+						data += "\n<b>Your linked trackers:</b><br>";
 
 						for (var i = 0; i < trackers.length; ++i)
 						{
