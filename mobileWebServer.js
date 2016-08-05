@@ -300,14 +300,18 @@ app.post('/user/registerUser', function(req, res)
 						for (var i = 0; i < cameras.length; ++i)
 						{
 							data += "Name :" + cameras[i].cameraName + ", CameraID:" + cameras[i].deviceID;
-							data += "<a href=\"" + webserverIP + "mountsdcard/camera/" + cameras[i].deviceID + "\">mount sd card</a>"
-							data += "<a href=\"" + webserverIP + "unmountsdcard/camera/" + cameras[i].deviceID + "\">unmount sd card</a>"
-							data += "<a href=\"" + webserverIP + "freespace/camera/" + cameras[i].deviceID + "\">Get free space on sd card</a><br>"
-							data += "<a href=\"" + webserverIP + "deletefile/camera/" + cameras[i].deviceID + "\">Delete file on sd card</a><br>"
-							data += "<a href=\"" + webserverIP + "firmwareupdate/camera/" + cameras[i].deviceID + "\"> Firmware update</a><br>"
-							data += "<a href=\"" + webserverIP + "unlink/camera/" + cameras[i].deviceID + "\"> Unlink camera</a><br>"
-							data += "<a href=\"" + webserverIP + "listsdcardfiles/camera/" + cameras[i].deviceID + "\"> List cloud & sd card files</a><br>"
-							data += "<a href=\"" + webserverIP + "saveconfig/camera/" + cameras[i].deviceID + "\"> Save config</a><br>"
+							data += "<a href=\"" + webserverIP + "mountsdcard/camera/" + cameras[i].deviceID + "\">mount sd card</a> "
+							data += "<a href=\"" + webserverIP + "unmountsdcard/camera/" + cameras[i].deviceID + "\">unmount sd card</a> "
+							data += "<a href=\"" + webserverIP + "freespace/camera/" + cameras[i].deviceID + "\">Get free space on sd card</a> "
+							data += "<a href=\"" + webserverIP + "deletefile/camera/" + cameras[i].deviceID + "\">Delete file on sd card</a> "
+							data += "<a href=\"" + webserverIP + "firmwareupdate/camera/" + cameras[i].deviceID + "\">Firmware update</a> "
+							data += "<a href=\"" + webserverIP + "unlink/camera/" + cameras[i].deviceID + "\">Unlink camera</a> "
+							data += "<a href=\"" + webserverIP + "listsdcardfiles/camera/" + cameras[i].deviceID + "\">List cloud & sd card files</a> "
+							data += "<a href=\"" + webserverIP + "saveconfig/camera/" + cameras[i].deviceID + "\">Save config</a> "
+							data += "<a href=\"" + webserverIP + "mirror/camera/" + cameras[i].deviceID + "/0\">Mirror normal</a> "
+							data += "<a href=\"" + webserverIP + "mirror/camera/" + cameras[i].deviceID + "/1\">Mirror</a> "
+							data += "<a href=\"" + webserverIP + "mirror/camera/" + cameras[i].deviceID + "/2\">Vertical to normal</a> "
+							data += "<a href=\"" + webserverIP + "mirror/camera/" + cameras[i].deviceID + "/3\">Vertical of mirror image</a> "
 						}
 
 						data += "<b>Your linked trackers:</b><br>";
@@ -533,6 +537,35 @@ app.post('/uploadCameraFilesystem', function(req, res)
 		}
 	});
 });
+
+app.get('/mirror/camera/:cameraID/:mirrorParam', function(req, res)
+		{
+			var cameraID = req.params.cameraID;
+			var param = req.params.mirrorParam;
+			
+			var settingsURL = appEngineIP + "camera/mirror";
+			request.post({
+				url : settingsURL,
+				json : {
+					cameraID : cameraID,
+					mirrorParam : param
+				},
+				headers : {
+					token : self.userToken,
+					userid : self.userID
+				}
+			}, function(error, response, body)
+			{
+				if (response && response.statusCode == 200)
+				{
+					res.send("Mirroring value set to " + param);
+				} else
+				{
+					res.send(util.format("Response:%j, body:%j", response, body));
+				}
+			});
+
+		});
 
 app.get('/saveconfig/camera/:cameraID', function(req, res)
 {
