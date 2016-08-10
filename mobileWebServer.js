@@ -312,6 +312,12 @@ app.post('/user/registerUser', function(req, res)
 							data += "<a href=\"" + webserverIP + "mirror/camera/" + cameras[i].deviceID + "/1\">Mirror</a> "
 							data += "<a href=\"" + webserverIP + "mirror/camera/" + cameras[i].deviceID + "/2\">Vertical to normal</a> "
 							data += "<a href=\"" + webserverIP + "mirror/camera/" + cameras[i].deviceID + "/3\">Vertical of mirror image</a> "
+							data += "<a href=\"" + webserverIP + "audio/camera/" + cameras[i].deviceID + "/1\">Audio on</a> "
+							data += "<a href=\"" + webserverIP + "audio/camera" + cameras[i].deviceID + "/0\">Audio off</a> "
+							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/0\">Motion detection on (no recording)</a> "
+							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/1\">Motion detection on (cloud recording)</a> "
+							data += "<a href=\"" + webserverIP + "motion/camera" + cameras[i].deviceID + "/2\">Motion detection off</a> "
+
 						}
 
 						data += "<br><b>Your linked trackers:</b><br>";
@@ -537,6 +543,87 @@ app.post('/uploadCameraFilesystem', function(req, res)
 		}
 	});
 });
+
+//data += "<a href=\"" + webserverIP + "audio/camera/" + cameras[i].deviceID + "/1\">Audio on</a> "
+//data += "<a href=\"" + webserverIP + "audio/camera" + cameras[i].deviceID + "/0\">Audio off</a> "
+//data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/0\">Motion detection on (no recording)</a> "
+//data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/1\">Motion detection on (cloud recording)</a> "
+//data += "<a href=\"" + webserverIP + "motion/camera" + cameras[i].deviceID + "/2\">Motion detection off</a> "
+
+app.get('/motion/camera/:cameraID/:state', function(req, res)
+		{
+			var cameraID = req.params.cameraID;
+			var state = req.params.state;
+			
+//			var cameraID = parseInt(req.body.cameraID);
+//			var motionDetection = req.body.motionDetection;
+//			var recording = req.body.recording || 0;
+			
+			var motionDetection, recording;
+			if (state === "0"){
+				motionDetection = "1";
+				recording = "0";
+			} else if (state === "1"){
+				motionDetection = "1";
+				recording = "1";
+			} else {
+				motionDetection = "0";
+				recording = "0";
+			}
+			
+			var settingsURL = appEngineIP + "camera/setMotionDetection";
+			request.post({
+				url : settingsURL,
+				json : {
+					cameraID : cameraID,
+					motionDetection : motionDetection,
+					recording : recording
+				},
+				headers : {
+					token : self.userToken,
+					userid : self.userID
+				}
+			}, function(error, response, body)
+			{
+				if (response && response.statusCode == 200)
+				{
+					res.send("Motion detection action taken!");
+				} else
+				{
+					res.send(util.format("Response:%j, body:%j", response, body));
+				}
+			});
+
+		});
+
+app.get('/audio/camera/:cameraID/:state', function(req, res)
+		{
+			var cameraID = req.params.cameraID;
+			var state = req.params.state;
+			
+			var settingsURL = appEngineIP + "camera/audio";
+			request.post({
+				url : settingsURL,
+				json : {
+					cameraID : cameraID,
+					state : state
+				},
+				headers : {
+					token : self.userToken,
+					userid : self.userID
+				}
+			}, function(error, response, body)
+			{
+				if (response && response.statusCode == 200)
+				{
+					res.send("Audio action taken!");
+				} else
+				{
+					res.send(util.format("Response:%j, body:%j", response, body));
+				}
+			});
+
+		});
 
 app.get('/mirror/camera/:cameraID/:mirrorParam', function(req, res)
 		{
