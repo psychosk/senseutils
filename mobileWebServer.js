@@ -317,6 +317,8 @@ app.post('/user/registerUser', function(req, res)
 							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/0\">Motion detection on (no recording)</a> "
 							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/1\">Motion detection on (cloud recording)</a> "
 							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/2\">Motion detection off</a> "
+							data += "<a href=\"" + webserverIP + "hd/camera/" + cameras[i].deviceID + "/0\">Turn HD recording off</a> "
+							data += "<a href=\"" + webserverIP + "hd/camera/" + cameras[i].deviceID + "/1\">Turn HD recording on</a> "
 
 						}
 
@@ -544,20 +546,10 @@ app.post('/uploadCameraFilesystem', function(req, res)
 	});
 });
 
-//data += "<a href=\"" + webserverIP + "audio/camera/" + cameras[i].deviceID + "/1\">Audio on</a> "
-//data += "<a href=\"" + webserverIP + "audio/camera" + cameras[i].deviceID + "/0\">Audio off</a> "
-//data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/0\">Motion detection on (no recording)</a> "
-//data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/1\">Motion detection on (cloud recording)</a> "
-//data += "<a href=\"" + webserverIP + "motion/camera" + cameras[i].deviceID + "/2\">Motion detection off</a> "
-
 app.get('/motion/camera/:cameraID/:state', function(req, res)
 		{
 			var cameraID = req.params.cameraID;
 			var state = req.params.state;
-			
-//			var cameraID = parseInt(req.body.cameraID);
-//			var motionDetection = req.body.motionDetection;
-//			var recording = req.body.recording || 0;
 			
 			var motionDetection, recording;
 			if (state === "0"){
@@ -588,6 +580,35 @@ app.get('/motion/camera/:cameraID/:state', function(req, res)
 				if (response && response.statusCode == 200)
 				{
 					res.send("Motion detection action taken!");
+				} else
+				{
+					res.send(util.format("Response:%j, body:%j", response, body));
+				}
+			});
+
+		});
+
+app.get('/hd/camera/:cameraID/:state', function(req, res)
+		{
+			var cameraID = req.params.cameraID;
+			var state = req.params.state;
+			
+			var settingsURL = appEngineIP + "camera/hdRecording";
+			request.post({
+				url : settingsURL,
+				json : {
+					cameraID : cameraID,
+					state : state
+				},
+				headers : {
+					token : self.userToken,
+					userid : self.userID
+				}
+			}, function(error, response, body)
+			{
+				if (response && response.statusCode == 200)
+				{
+					res.send("HD quality action taken!");
 				} else
 				{
 					res.send(util.format("Response:%j, body:%j", response, body));
