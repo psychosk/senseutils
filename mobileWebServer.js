@@ -317,7 +317,9 @@ app.post('/user/registerUser', function(req, res)
 							data += "<a href=\"" + webserverIP + "ondemand/camera/" + cameras[i].deviceID + "\">Ondemand recording (sdcard)</a> "
 							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/0\">Motion detection on (no recording)</a> "
 							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/1\">Motion detection on (cloud recording)</a> "
-							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/2\">Motion detection off</a> "
+							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/2\">Motion detection on (sdcard recording)</a> "
+							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/3\">Motion detection off</a> "
+							
 							data += "<a href=\"" + webserverIP + "hd/camera/" + cameras[i].deviceID + "/0\">Turn HD recording off</a> "
 							data += "<a href=\"" + webserverIP + "hd/camera/" + cameras[i].deviceID + "/1\">Turn HD recording on</a> "
 							data += "<a href=\"" + webserverIP + "scheduledrecording/camera/" + cameras[i].deviceID + "\">Scheduled recording settings</a> "
@@ -656,7 +658,10 @@ app.get('/motion/camera/:cameraID/:state', function(req, res)
 	{
 		motionDetection = "1";
 		recording = "1";
-	} else
+	} else if (state === "2"){
+		motionDetection = "1";
+		recording = "2";
+	} else 
 	{
 		motionDetection = "0";
 		recording = "0";
@@ -715,6 +720,34 @@ app.get('/hd/camera/:cameraID/:state', function(req, res)
 	});
 
 });
+
+app.get('/ondemand/camera/:cameraID', function(req, res)
+		{
+			var cameraID = req.params.cameraID;
+
+			var settingsURL = appEngineIP + "camera/ondemandRecording";
+			request.post({
+				url : settingsURL,
+				json : {
+					cameraID : cameraID,
+					state : 2 // hardcoded to sdcard
+				},
+				headers : {
+					token : self.userToken,
+					userid : self.userID
+				}
+			}, function(error, response, body)
+			{
+				if (response && response.statusCode == 200)
+				{
+					res.send("Ondemand sd card recording action given!");
+				} else
+				{
+					res.send(util.format("Response:%j, body:%j", response, body));
+				}
+			});
+
+		});
 
 app.get('/audio/camera/:cameraID/:state', function(req, res)
 {
