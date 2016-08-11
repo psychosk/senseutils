@@ -558,23 +558,25 @@ app.post('/scheduledrecording/camera/fire/:cameraID', function(req, res)
 	
 	var cameraID = req.params.cameraID;
 	var data = "";	
-	var params = {};
-	params.cameraID = cameraID;
+	var daysOfTheWeek = {};
 	for (var i = 0; i < days.length; ++i)
 	{
 		var enabled = req.body[days[i]];
-		params.daysOfTheWeek[days[i]] = (enabled==="1" ? 1 : 0);
+		daysOfTheWeek[days[i]] = (enabled==="1" ? 1 : 0);
 	}
 
 	var startTime = req.body.startTime, endTime = req.body.endTime;
-	params.startTime = startTime;
-	params.endTime = endTime;
 	
 	var settingsURL = appEngineIP + "camera/scheduledRecording";
-	data += "Sending data :" + JSON.stringify(params) + "<br>";
+	
 	request.post({
 		url : settingsURL,
-		json : params,
+		json : {
+			cameraID : cameraID,
+			daysOfTheWeek : daysOfTheWeek,
+			startTime : startTime,
+			endTime:endTime
+		},
 		headers : {
 			token : self.userToken,
 			userid : self.userID
