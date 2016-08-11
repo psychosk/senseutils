@@ -571,14 +571,14 @@ app.get('/scheduledrecording/camera/:cameraID', function(req, res)
 	// app.post('/camera/scheduledRecording', camera.setScheduledRecording);
 
 	var myForm = Form.create({
-		action : appEngineIP + "scheduledrecording/camera/fire/:cameraID",
+		action : webserverIP + "scheduledrecording/camera/fire/:cameraID",
 		method : 'post'
 	});
 
 	// opens the form
 	data += myForm.open(); // will return: <form action="/signup"
 
-	data += "Day  enabled/disabled checkbox"
+	data += "Day  enabled/disabled<br>"
 	// class="myform-class">
 
 	for (var i = 0; i < days.length; i++)
@@ -598,9 +598,8 @@ app.get('/scheduledrecording/camera/:cameraID', function(req, res)
 	data += myForm.text().attr('name', 'startTime').render();
 	data += "<br>";
 	data += "<br>EndTime:";
-	data += "<br>";
 	// add the first field and renders it
-	data += myForm.text().attr('name', 'endTime').render();
+	data += myForm.text().attr('name', 'endTime').render() + "<br>"
 
 	data += myForm.submit().attr('value', 'Save settings').render();
 
