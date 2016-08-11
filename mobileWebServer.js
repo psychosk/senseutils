@@ -580,6 +580,8 @@ app.get('/scheduledrecording/camera/:cameraID', function(req, res)
 	
 
 	data += myForm.submit().attr('value', 'change').render();
+	
+	res.send(data);
 });
 
 app.get('/motion/camera/:cameraID/:state', function(req, res)
