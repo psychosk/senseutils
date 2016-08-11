@@ -552,14 +552,20 @@ var days = [ "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
 
 app.post('/scheduledrecording/camera/fire/:cameraID', function(req, res)
 {
+	var data = "";
+	
+	data += util.format("req is :%j",req);
+	
 	for (var i = 0; i < days.length; ++i)
 	{
 		var enabled = req[days[i]];
-		console.log("%s : %s", days[i], enabled);
+		data += util.format("%s : %s", days[i], enabled);
 	}
 
 	var startTime = req.startTime, endTime = req.endTime;
-	console.log("start:%s,end:%s", startTime, endTime);
+	data += util.format("start:%s,end:%s", startTime, endTime);
+	
+	res.send(data);
 });
 
 app.get('/scheduledrecording/camera/:cameraID', function(req, res)
@@ -596,7 +602,6 @@ app.get('/scheduledrecording/camera/:cameraID', function(req, res)
 	}
 	data += "StartTime:";
 	data += myForm.text().attr('name', 'startTime').render();
-	data += "<br>";
 	data += "<br>EndTime:";
 	// add the first field and renders it
 	data += myForm.text().attr('name', 'endTime').render() + "<br>"
