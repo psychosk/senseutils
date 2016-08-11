@@ -320,10 +320,11 @@ app.post('/user/registerUser', function(req, res)
 							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/1\">Motion detection on (cloud recording)</a> "
 							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/2\">Motion detection on (sdcard recording)</a> "
 							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/3\">Motion detection off</a> "
-							
 							data += "<a href=\"" + webserverIP + "hd/camera/" + cameras[i].deviceID + "/0\">Turn HD recording off</a> "
 							data += "<a href=\"" + webserverIP + "hd/camera/" + cameras[i].deviceID + "/1\">Turn HD recording on</a> "
 							data += "<a href=\"" + webserverIP + "scheduledrecording/camera/" + cameras[i].deviceID + "\">Scheduled recording settings</a> "
+							data += "<a href=\"" + webserverIP + "blocksize/camera/" + cameras[i].deviceID + "\">Set blocksize</a> "
+							data += "<a href=\"" + webserverIP + "play/camera/" + cameras[i].deviceID + "\">Playback file</a> "
 
 							data += "<br>Your url for WAN HD streaming:<br>Your url for WAN SD streaming:\n"
 						}
@@ -644,6 +645,126 @@ app.get('/scheduledrecording/camera/:cameraID', function(req, res)
 
 	res.send(data);
 });
+
+app.post('/blocksize/camera/fire/:cameraID', function(req, res)
+		{
+			var cameraID = req.params.cameraID;
+			var data = "";	
+			var blockSize = req.body.blockSize;
+			var settingsURL = appEngineIP + "camera/blockSize";
+			
+			var params = {
+				blockSize : blockSize
+			};
+			
+			data += " Sending data :" + JSON.stringify(params) + "<br>";
+			
+			request.post({
+				url : settingsURL,
+				json : params,
+				headers : {
+					token : self.userToken,
+					userid : self.userID
+				}
+			}, function(error, response, body)
+			{
+				if (response && response.statusCode == 200)
+				{
+					data += "Blocksize action taken!";
+				} else
+				{
+					data += util.format("Response:%j, body:%j", response, body);
+				}
+				res.send(data);
+			});
+
+		});
+
+app.get('/blocksize/camera/:cameraID', function(req, res)
+		{
+			var data = "";
+
+			var Form = require('form-builder').Form;
+
+			var cameraID = req.params.cameraID;
+			
+			// app.post('/camera/scheduledRecording', camera.setScheduledRecording);
+
+			var myForm = Form.create({
+				action : webserverIP + "blocksize/camera/fire/" + cameraID,
+				method : 'post'
+			});
+
+			// opens the form
+			data += myForm.open(); // will return: <form action="/signup"
+
+			data += "BlockSize:";
+			data += myForm.text().attr('name', 'blockSize').render();
+
+			data += myForm.submit().attr('value', 'Save settings').render();
+
+			res.send(data);
+		});
+
+app.post('/play/camera/fire/:cameraID', function(req, res)
+		{
+			var cameraID = req.params.cameraID;
+			var data = "";	
+			var fileName = req.body.fileName;
+			var settingsURL = appEngineIP + "camera/playfile";
+			
+			var params = {
+				fileName : fileName
+			};
+			
+			data += " Sending data :" + JSON.stringify(params) + "<br>";
+			
+			request.post({
+				url : settingsURL,
+				json : params,
+				headers : {
+					token : self.userToken,
+					userid : self.userID
+				}
+			}, function(error, response, body)
+			{
+				if (response && response.statusCode == 200)
+				{
+					data += "Playfile action taken!";
+				} else
+				{
+					data += util.format("Response:%j, body:%j", response, body);
+				}
+				res.send(data);
+			});
+
+		});
+
+app.get('/play/camera/:cameraID', function(req, res)
+		{
+			var data = "";
+
+			var Form = require('form-builder').Form;
+
+			var cameraID = req.params.cameraID;
+			
+			// app.post('/camera/scheduledRecording', camera.setScheduledRecording);
+
+			var myForm = Form.create({
+				action : webserverIP + "play/camera/fire/" + cameraID,
+				method : 'post'
+			});
+
+			// opens the form
+			data += myForm.open(); // will return: <form action="/signup"
+
+			data += "File name:";
+			data += myForm.text().attr('name', 'fileName').render();
+
+			data += myForm.submit().attr('value', 'Tell camera to play this file').render();
+
+			res.send(data);
+		});
 
 app.get('/motion/camera/:cameraID/:state', function(req, res)
 {
