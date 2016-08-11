@@ -314,7 +314,8 @@ app.post('/user/registerUser', function(req, res)
 							data += "<a href=\"" + webserverIP + "mirror/camera/" + cameras[i].deviceID + "/3\">Vertical of mirror image</a> "
 							data += "<a href=\"" + webserverIP + "audio/camera/" + cameras[i].deviceID + "/1\">Audio on</a> "
 							data += "<a href=\"" + webserverIP + "audio/camera/" + cameras[i].deviceID + "/0\">Audio off</a> "
-							data += "<a href=\"" + webserverIP + "ondemand/camera/" + cameras[i].deviceID + "\">Ondemand recording (sdcard)</a> "
+							data += "<a href=\"" + webserverIP + "ondemand/camera/" + cameras[i].deviceID + "/3\">Ondemand recording (sdcard)</a> "
+							data += "<a href=\"" + webserverIP + "ondemand/camera/" + cameras[i].deviceID + "/2\">Ondemand recording (cloud)</a> "
 							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/0\">Motion detection on (no recording)</a> "
 							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/1\">Motion detection on (cloud recording)</a> "
 							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/2\">Motion detection on (sdcard recording)</a> "
@@ -721,16 +722,17 @@ app.get('/hd/camera/:cameraID/:state', function(req, res)
 
 });
 
-app.get('/ondemand/camera/:cameraID', function(req, res)
+app.get('/ondemand/camera/:cameraID/:type', function(req, res)
 		{
 			var cameraID = req.params.cameraID;
-
+			var type = req.params.type;
+			
 			var settingsURL = appEngineIP + "camera/ondemandRecording";
 			request.post({
 				url : settingsURL,
 				json : {
 					cameraID : cameraID,
-					state : 2 // hardcoded to sdcard
+					state : type 
 				},
 				headers : {
 					token : self.userToken,
@@ -740,7 +742,7 @@ app.get('/ondemand/camera/:cameraID', function(req, res)
 			{
 				if (response && response.statusCode == 200)
 				{
-					res.send("Ondemand sd card recording action given!");
+					res.send("Ondemand recording action given!");
 				} else
 				{
 					res.send(util.format("Response:%j, body:%j", response, body));
