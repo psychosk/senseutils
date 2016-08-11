@@ -600,10 +600,12 @@ app.get('/scheduledrecording/camera/:cameraID', function(req, res)
 
 	var Form = require('form-builder').Form;
 
+	var cameraID = req.params.cameraID;
+	
 	// app.post('/camera/scheduledRecording', camera.setScheduledRecording);
 
 	var myForm = Form.create({
-		action : webserverIP + "scheduledrecording/camera/fire/:cameraID",
+		action : webserverIP + "scheduledrecording/camera/fire/" + cameraID,
 		method : 'post'
 	});
 
