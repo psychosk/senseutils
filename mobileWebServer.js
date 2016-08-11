@@ -591,8 +591,9 @@ app.post('/scheduledrecording/camera/fire/:cameraID', function(req, res)
 		{
 			data += util.format("Response:%j, body:%j", response, body);
 		}
+		res.send(data);
 	});
-	res.send(data);
+
 });
 
 app.get('/scheduledrecording/camera/:cameraID', function(req, res)
