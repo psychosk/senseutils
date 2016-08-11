@@ -314,6 +314,7 @@ app.post('/user/registerUser', function(req, res)
 							data += "<a href=\"" + webserverIP + "mirror/camera/" + cameras[i].deviceID + "/3\">Vertical of mirror image</a> "
 							data += "<a href=\"" + webserverIP + "audio/camera/" + cameras[i].deviceID + "/1\">Audio on</a> "
 							data += "<a href=\"" + webserverIP + "audio/camera/" + cameras[i].deviceID + "/0\">Audio off</a> "
+							data += "<a href=\"" + webserverIP + "ondemand/camera/" + cameras[i].deviceID + "\">Ondemand recording (sdcard)</a> "
 							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/0\">Motion detection on (no recording)</a> "
 							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/1\">Motion detection on (cloud recording)</a> "
 							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/2\">Motion detection off</a> "
