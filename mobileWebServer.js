@@ -553,9 +553,6 @@ var days = [ "monday", "tuesday", "wednesday", "thursday", "friday", "saturday",
 app.post('/scheduledrecording/camera/fire/:cameraID', function(req, res)
 {
 	
-	//{"cameraID":"{{cameraID}}", "daysOfTheWeek" : {"monday":1,"tuesday":1,"wednesday":1,"thursday":1,"friday":1,"saturday":1,"sunday":1},"startTime" :"104000", "endTime" : "235959"}
-
-	
 	var cameraID = req.params.cameraID;
 	var data = "";	
 	var daysOfTheWeek = {};
@@ -569,14 +566,18 @@ app.post('/scheduledrecording/camera/fire/:cameraID', function(req, res)
 	
 	var settingsURL = appEngineIP + "camera/scheduledRecording";
 	
+	var params = {
+		cameraID : cameraID,
+		daysOfTheWeek : daysOfTheWeek,
+		startTime : startTime,
+		endTime:endTime
+	};
+	
+	data += " Sending data :" + JSON.stringify(params) + "<br>";
+	
 	request.post({
 		url : settingsURL,
-		json : {
-			cameraID : cameraID,
-			daysOfTheWeek : daysOfTheWeek,
-			startTime : startTime,
-			endTime:endTime
-		},
+		json : params,
 		headers : {
 			token : self.userToken,
 			userid : self.userID
@@ -585,10 +586,10 @@ app.post('/scheduledrecording/camera/fire/:cameraID', function(req, res)
 	{
 		if (response && response.statusCode == 200)
 		{
-			res.send("Scheduled recording action taken!");
+			data += "Scheduled recording action taken!";
 		} else
 		{
-			res.send(util.format("Response:%j, body:%j", response, body));
+			data += util.format("Response:%j, body:%j", response, body);
 		}
 	});
 	res.send(data);
