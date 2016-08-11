@@ -37,7 +37,7 @@ var sessionData = {};
 
 var self = this;
 
-if (process.env.NODE_ENV === 'dev' || process.env.USER === 'sid')
+if (process.env.NODE_ENV === 'dev')
 {
 	console.log("Using dev environment!");
 	webserverIP = "http://localhost:4000/";
@@ -319,7 +319,9 @@ app.post('/user/registerUser', function(req, res)
 							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/2\">Motion detection off</a> "
 							data += "<a href=\"" + webserverIP + "hd/camera/" + cameras[i].deviceID + "/0\">Turn HD recording off</a> "
 							data += "<a href=\"" + webserverIP + "hd/camera/" + cameras[i].deviceID + "/1\">Turn HD recording on</a> "
+							data += "<a href=\"" + webserverIP + "scheduledrecording/camera/" + cameras[i].deviceID + "\">Scheduled recording settings</a> "
 
+							data += "<br>Your url for WAN HD streaming:<br>Your url for WAN SD streaming:\n"
 						}
 
 						data += "<br><b>Your linked trackers:</b><br>";
@@ -546,134 +548,171 @@ app.post('/uploadCameraFilesystem', function(req, res)
 	});
 });
 
-app.get('/motion/camera/:cameraID/:state', function(req, res)
-		{
-			var cameraID = req.params.cameraID;
-			var state = req.params.state;
-			
-			var motionDetection, recording;
-			if (state === "0"){
-				motionDetection = "1";
-				recording = "0";
-			} else if (state === "1"){
-				motionDetection = "1";
-				recording = "1";
-			} else {
-				motionDetection = "0";
-				recording = "0";
-			}
-			
-			var settingsURL = appEngineIP + "camera/setMotionDetection";
-			request.post({
-				url : settingsURL,
-				json : {
-					cameraID : cameraID,
-					motionDetection : motionDetection,
-					recording : recording
-				},
-				headers : {
-					token : self.userToken,
-					userid : self.userID
-				}
-			}, function(error, response, body)
-			{
-				if (response && response.statusCode == 200)
-				{
-					res.send("Motion detection action taken!");
-				} else
-				{
-					res.send(util.format("Response:%j, body:%j", response, body));
-				}
-			});
+app.get('/scheduledrecording/camera/:cameraID', function(req, res)
+{
+	var data="";
+	
+	var Form = require('form-builder').Form;
 
-		});
+	//app.post('/camera/scheduledRecording', camera.setScheduledRecording);
+	
+	var myForm = Form.create({
+		action : appEngineIP + "camera/scheduledRecording",
+		method : 'post'
+	});
+
+	// opens the form
+	data += myForm.open(); // will return: <form action="/signup"
+	// class="myform-class">
+	var days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+	for (var i = 0; i < days.length; i++){
+		data += days[i];
+		// a group of checkboxes, the formBuilder automatically transform "checklist[]" into "checklist[INDEX]", you  can use your own INDEX without problem, see example bellow 
+		data += myForm.checkbox().attr({name: days[i]}).render(); // <input type="checkbox" value="1" name="checklist[0]" checked="checked" /> 
+	}
+	data += "StartTime:";
+	data += myForm.text().attr('name', 'startTime').render();
+
+	data += "<br>EndTime:";
+
+	// add the first field and renders it
+	data += myForm.text().attr('name', 'endTime').render();
+	
+
+	data += myForm.submit().attr('value', 'change').render();
+});
+
+app.get('/motion/camera/:cameraID/:state', function(req, res)
+{
+	var cameraID = req.params.cameraID;
+	var state = req.params.state;
+
+	var motionDetection, recording;
+	if (state === "0")
+	{
+		motionDetection = "1";
+		recording = "0";
+	} else if (state === "1")
+	{
+		motionDetection = "1";
+		recording = "1";
+	} else
+	{
+		motionDetection = "0";
+		recording = "0";
+	}
+
+	var settingsURL = appEngineIP + "camera/setMotionDetection";
+	request.post({
+		url : settingsURL,
+		json : {
+			cameraID : cameraID,
+			motionDetection : motionDetection,
+			recording : recording
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		if (response && response.statusCode == 200)
+		{
+			res.send("Motion detection action taken!");
+		} else
+		{
+			res.send(util.format("Response:%j, body:%j", response, body));
+		}
+	});
+
+});
 
 app.get('/hd/camera/:cameraID/:state', function(req, res)
-		{
-			var cameraID = req.params.cameraID;
-			var state = req.params.state;
-			
-			var settingsURL = appEngineIP + "camera/hdRecording";
-			request.post({
-				url : settingsURL,
-				json : {
-					cameraID : cameraID,
-					state : state
-				},
-				headers : {
-					token : self.userToken,
-					userid : self.userID
-				}
-			}, function(error, response, body)
-			{
-				if (response && response.statusCode == 200)
-				{
-					res.send("HD quality action taken!");
-				} else
-				{
-					res.send(util.format("Response:%j, body:%j", response, body));
-				}
-			});
+{
+	var cameraID = req.params.cameraID;
+	var state = req.params.state;
 
-		});
+	var settingsURL = appEngineIP + "camera/hdRecording";
+	request.post({
+		url : settingsURL,
+		json : {
+			cameraID : cameraID,
+			state : state
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		if (response && response.statusCode == 200)
+		{
+			res.send("HD quality action taken!");
+		} else
+		{
+			res.send(util.format("Response:%j, body:%j", response, body));
+		}
+	});
+
+});
 
 app.get('/audio/camera/:cameraID/:state', function(req, res)
-		{
-			var cameraID = req.params.cameraID;
-			var state = req.params.state;
-			
-			var settingsURL = appEngineIP + "camera/audio";
-			request.post({
-				url : settingsURL,
-				json : {
-					cameraID : cameraID,
-					state : state
-				},
-				headers : {
-					token : self.userToken,
-					userid : self.userID
-				}
-			}, function(error, response, body)
-			{
-				if (response && response.statusCode == 200)
-				{
-					res.send("Audio action taken!");
-				} else
-				{
-					res.send(util.format("Response:%j, body:%j", response, body));
-				}
-			});
+{
+	var cameraID = req.params.cameraID;
+	var state = req.params.state;
 
-		});
+	var settingsURL = appEngineIP + "camera/audio";
+	request.post({
+		url : settingsURL,
+		json : {
+			cameraID : cameraID,
+			state : state
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		if (response && response.statusCode == 200)
+		{
+			res.send("Audio action taken!");
+		} else
+		{
+			res.send(util.format("Response:%j, body:%j", response, body));
+		}
+	});
+
+});
 
 app.get('/mirror/camera/:cameraID/:mirrorParam', function(req, res)
-		{
-			var cameraID = req.params.cameraID;
-			var param = req.params.mirrorParam;
-			
-			var settingsURL = appEngineIP + "camera/mirror";
-			request.post({
-				url : settingsURL,
-				json : {
-					cameraID : cameraID,
-					mirrorParam : param
-				},
-				headers : {
-					token : self.userToken,
-					userid : self.userID
-				}
-			}, function(error, response, body)
-			{
-				if (response && response.statusCode == 200)
-				{
-					res.send("Mirroring value set to " + param);
-				} else
-				{
-					res.send(util.format("Response:%j, body:%j", response, body));
-				}
-			});
+{
+	var cameraID = req.params.cameraID;
+	var param = req.params.mirrorParam;
 
-		});
+	var settingsURL = appEngineIP + "camera/mirror";
+	request.post({
+		url : settingsURL,
+		json : {
+			cameraID : cameraID,
+			mirrorParam : param
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		if (response && response.statusCode == 200)
+		{
+			res.send("Mirroring value set to " + param);
+		} else
+		{
+			res.send(util.format("Response:%j, body:%j", response, body));
+		}
+	});
+
+});
 
 app.get('/saveconfig/camera/:cameraID', function(req, res)
 {
@@ -799,7 +838,7 @@ app.get('/deletefile/camera/:cameraID', function(req, res)
 	data += "Filename:";
 	data += myForm.text().attr('name', 'filename').render();
 	data += myForm.submit().attr('value', 'delete').render();
-	
+
 	res.send(data);
 });
 
@@ -807,7 +846,7 @@ app.post('/deletefile/camera/fire/:cameraID', function(req, res)
 {
 	var cameraID = req.params.cameraID;
 	var name = req.body.filename;
-	
+
 	var settingsURL = appEngineIP + "camera/deleterecording";
 	request.post({
 		url : settingsURL,
