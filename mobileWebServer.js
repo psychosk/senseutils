@@ -548,39 +548,62 @@ app.post('/uploadCameraFilesystem', function(req, res)
 	});
 });
 
+var days = [ "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" ];
+
+app.post('/scheduledrecording/camera/fire/:cameraID', function(req, res)
+{
+	for (var i = 0; i < days.length; ++i)
+	{
+		var enabled = req[days[i]];
+		console.log("%s : %s", days[i], enabled);
+	}
+
+	var startTime = req.startTime, endTime = req.endTime;
+	console.log("start:%s,end:%s", startTime, endTime);
+});
+
 app.get('/scheduledrecording/camera/:cameraID', function(req, res)
 {
-	var data="";
-	
+	var data = "";
+
 	var Form = require('form-builder').Form;
 
-	//app.post('/camera/scheduledRecording', camera.setScheduledRecording);
-	
+	// app.post('/camera/scheduledRecording', camera.setScheduledRecording);
+
 	var myForm = Form.create({
-		action : appEngineIP + "camera/scheduledRecording",
+		action : appEngineIP + "scheduledrecording/camera/fire/:cameraID",
 		method : 'post'
 	});
 
 	// opens the form
 	data += myForm.open(); // will return: <form action="/signup"
+
+	data += "Day  enabled/disabled checkbox"
 	// class="myform-class">
-	var days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
-	for (var i = 0; i < days.length; i++){
+
+	for (var i = 0; i < days.length; i++)
+	{
 		data += days[i];
-		// a group of checkboxes, the formBuilder automatically transform "checklist[]" into "checklist[INDEX]", you  can use your own INDEX without problem, see example bellow 
-		data += myForm.checkbox().attr({name: days[i]}).render(); // <input type="checkbox" value="1" name="checklist[0]" checked="checked" /> 
+		// a group of checkboxes, the formBuilder automatically transform
+		// "checklist[]" into "checklist[INDEX]", you can use your own INDEX
+		// without problem, see example bellow
+		data += myForm.checkbox().attr({
+			name : days[i]
+		}).render(); // <input type="checkbox" value="1" name="checklist[0]"
+						// checked="checked" />
+
+		data += "<br>";
 	}
 	data += "StartTime:";
 	data += myForm.text().attr('name', 'startTime').render();
-
+	data += "<br>";
 	data += "<br>EndTime:";
-
+	data += "<br>";
 	// add the first field and renders it
 	data += myForm.text().attr('name', 'endTime').render();
-	
 
-	data += myForm.submit().attr('value', 'change').render();
-	
+	data += myForm.submit().attr('value', 'Save settings').render();
+
 	res.send(data);
 });
 
