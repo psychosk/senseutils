@@ -554,15 +554,15 @@ app.post('/scheduledrecording/camera/fire/:cameraID', function(req, res)
 {
 	var data = "";
 	
-	data += util.format("req is :%j",req);
+	data += util.format("req is :%j",req.body);
 	
 	for (var i = 0; i < days.length; ++i)
 	{
-		var enabled = req[days[i]];
+		var enabled = req.body[days[i]];
 		data += util.format("%s : %s", days[i], enabled);
 	}
 
-	var startTime = req.startTime, endTime = req.endTime;
+	var startTime = req.body.startTime, endTime = req.body.endTime;
 	data += util.format("start:%s,end:%s", startTime, endTime);
 	
 	res.send(data);
