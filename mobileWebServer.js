@@ -256,8 +256,7 @@ app.post('/user/registerUser', function(req, res)
 
 						for (var i = 0; i < gateways.length; ++i)
 						{
-							data += "GatewayName:" + gateways[i].gatewayName + ",GatewayID:" + gateways[i].deviceID + "<a href=\"" + webserverIP + "configure/gateway/" + gateways[i].deviceID
-									+ "\">Configure</a>";
+							data += "GatewayName:" + gateways[i].gatewayName + ",GatewayID:" + gateways[i].deviceID + "<a href=\"" + webserverIP + "configure/gateway/" + gateways[i].deviceID + "\">Configure</a>";
 							data += "<a href=\"" + webserverIP + "permitjoin/gateway/" + gateways[i].deviceID + "\"> Permit join </a>";
 							data += "<a href=\"" + webserverIP + "delete/gateway/" + gateways[i].deviceID + "\"> Unlink (unlinks all paired smartplugs/panicbuttons as well) </a>";
 							data += "<a href=\"" + webserverIP + "factoryreset/gateway/" + gateways[i].deviceID + "\"> Factory reset </a>";
@@ -314,17 +313,9 @@ app.post('/user/registerUser', function(req, res)
 							data += "<a href=\"" + webserverIP + "mirror/camera/" + cameras[i].deviceID + "/3\">Vertical of mirror image</a> "
 							data += "<a href=\"" + webserverIP + "audio/camera/" + cameras[i].deviceID + "/1\">Audio on</a> "
 							data += "<a href=\"" + webserverIP + "audio/camera/" + cameras[i].deviceID + "/0\">Audio off</a> "
-							data += "<a href=\"" + webserverIP + "ondemand/camera/" + cameras[i].deviceID + "/3\">Ondemand recording (sdcard)</a> "
-							data += "<a href=\"" + webserverIP + "ondemand/camera/" + cameras[i].deviceID + "/2\">Ondemand recording (cloud)</a> "
-							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/0\">Motion detection on (no recording)</a> "
-							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/1\">Motion detection on (cloud recording)</a> "
-							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/2\">Motion detection on (sdcard recording)</a> "
-							data += "<a href=\"" + webserverIP + "motion/camera/" + cameras[i].deviceID + "/3\">Motion detection off</a> "
-							data += "<a href=\"" + webserverIP + "hd/camera/" + cameras[i].deviceID + "/0\">Turn HD recording off</a> "
-							data += "<a href=\"" + webserverIP + "hd/camera/" + cameras[i].deviceID + "/1\">Turn HD recording on</a> "
-							data += "<a href=\"" + webserverIP + "scheduledrecording/camera/" + cameras[i].deviceID + "\">Scheduled recording settings</a> "
-							data += "<a href=\"" + webserverIP + "blocksize/camera/" + cameras[i].deviceID + "\">Set blocksize</a> "
+							data += "<a href=\"" + webserverIP + "ondemand/camera/" + cameras[i].deviceID + "\">Kick off ondemand recording</a> "
 							data += "<a href=\"" + webserverIP + "play/camera/" + cameras[i].deviceID + "\">Playback file</a> "
+							data += "<a href=\"" + webserverIP + "settings/camera/" + cameras[i].deviceID + "\">Set camera settings</a> "
 
 							data += "<br>Your url for WAN HD streaming:<br>Your url for WAN SD streaming:\n"
 						}
@@ -333,8 +324,7 @@ app.post('/user/registerUser', function(req, res)
 
 						for (var i = 0; i < trackers.length; ++i)
 						{
-							data += "Name :" + trackers[i].trackerName + ",TrackerID:" + trackers[i].deviceID + "<a href=\"" + webserverIP + "configure/tracker/" + trackers[i].deviceID
-									+ "\">Configure</a>";
+							data += "Name :" + trackers[i].trackerName + ",TrackerID:" + trackers[i].deviceID + "<a href=\"" + webserverIP + "configure/tracker/" + trackers[i].deviceID + "\">Configure</a>";
 							data += "  <a href=\"" + webserverIP + "location/tracker/" + trackers[i].deviceID + "\">Location data</a>";
 							data += "  <a href=\"" + webserverIP + "event/tracker/" + trackers[i].deviceID + "\">Event data</a>";
 							data += "  <a href=\"" + webserverIP + "livetracking/tracker/" + trackers[i].deviceID + "/1\">Start live tracking</a>";
@@ -555,31 +545,47 @@ app.post('/uploadCameraFilesystem', function(req, res)
 
 var days = [ "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday" ];
 
-app.post('/scheduledrecording/camera/fire/:cameraID', function(req, res)
+app.post('/settings/camera/fire/:cameraID', function(req, res)
 {
-	
+
 	var cameraID = req.params.cameraID;
-	var data = "";	
+	var data = "";
 	var daysOfTheWeek = {};
 	for (var i = 0; i < days.length; ++i)
 	{
 		var enabled = req.body[days[i]];
-		daysOfTheWeek[days[i]] = (enabled==="1" ? 1 : 0);
+		daysOfTheWeek[days[i]] = (enabled === "1" ? 1 : 0);
 	}
 
 	var startTime = req.body.startTime, endTime = req.body.endTime;
+
+	var motionDetection = req.body.motionDetection;
+	var ondemandRecordingLocation = req.body.ondemandRecordingLocation;
+	var motionDetectionRecordingLocation = req.body.motionDetectionRecordingLocation;
+	var blockSize = req.body.blockSize;
+	var hdRecording = req.body.hdRecording;
 	
-	var settingsURL = appEngineIP + "camera/scheduledRecording";
 	
+	var settingsURL = appEngineIP + "camera/options";
+
 	var params = {
 		cameraID : cameraID,
-		daysOfTheWeek : daysOfTheWeek,
-		startTime : startTime,
-		endTime:endTime
+		scheduledRecordingSchedule : {	
+			daysOfTheWeek : daysOfTheWeek,
+			startTime : startTime,
+			endTime : endTime
+		},
+		motionDetection:motionDetection,
+		hdRecording : hdRecording,
+		blockSize : blockSize,
+		motionDetectionRecordingLocation : motionDetectionRecordingLocation,
+		ondemandRecordingLocation : ondemandRecordingLocation
 	};
+
+	console.log("Sending:%j",params);
 	
-	data += " Sending data :" + JSON.stringify(params) + "<br>";
-	
+//	data += " Sending data :" + JSON.stringify(params) + "<br>";
+//
 	request.post({
 		url : settingsURL,
 		json : params,
@@ -591,7 +597,7 @@ app.post('/scheduledrecording/camera/fire/:cameraID', function(req, res)
 	{
 		if (response && response.statusCode == 200)
 		{
-			data += "Scheduled recording action taken!";
+			data += "Options saved!";
 		} else
 		{
 			data += util.format("Response:%j, body:%j", response, body);
@@ -601,170 +607,225 @@ app.post('/scheduledrecording/camera/fire/:cameraID', function(req, res)
 
 });
 
-app.get('/scheduledrecording/camera/:cameraID', function(req, res)
+app.get('/settings/camera/:cameraID', function(req, res)
+{
+	var data = "";
+	var cameraID = req.params.cameraID;
+
+	var settingsURL = appEngineIP + "camera/options?cameraID=" + cameraID;
+	request.get({
+		url : settingsURL,
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		},
+		json : {}
+	}, function(error, response, body)
+	{
+		if (response && response.statusCode == 200)
+		{
+			console.log("Got back %j", body);
+
+			var motionDetection = body.motionDetection;
+			var scheduledRecordingSchedule = body.scheduledRecordingSchedule;
+			var ondemandRecordingLocation = body.ondemandRecordingLocation;
+			var motionDetectionRecordingLocation = body.motionDetectionRecordingLocation;
+			var blockSize = body.blockSize;
+			var hdRecording = body.hdRecording;
+
+			var Form = require('form-builder').Form;
+
+			var cameraID = req.params.cameraID;
+
+			// app.post('/camera/scheduledRecording',
+			// camera.setScheduledRecording);
+
+			var myForm = Form.create({
+				action : webserverIP + "settings/camera/fire/" + cameraID,
+				method : 'post'
+			});
+
+			// opens the form
+			data += myForm.open(); // will return: <form action="/signup"
+
+			data += "<b>Scheduled recording settings:</b><br>";
+			data += "Day  enabled/disabled<br>"
+			// class="myform-class">
+
+			for (var i = 0; i < days.length; i++)
+			{
+				data += days[i];
+				// a group of checkboxes, the formBuilder automatically
+				// transform
+				// "checklist[]" into "checklist[INDEX]", you can use your own
+				// INDEX
+				// without problem, see example bellow
+				if (scheduledRecordingSchedule.daysOfTheWeek[days[i]] == 1)
+				{
+					data += myForm.checkbox().attr({
+						name : days[i],
+						checked : 'checked'
+					}).render();
+				} else
+				{
+					data += myForm.checkbox().attr({
+						name : days[i]
+					}).render();
+				}
+				data += "<br>";
+			}
+			data += "StartTime:";
+			data += myForm.text().attr('name', 'startTime').attr('value', scheduledRecordingSchedule.startTime || '').render();
+			data += "<br>EndTime:";
+			// add the first field and renders it
+			data += myForm.text().attr('name', 'endTime').attr('value', scheduledRecordingSchedule.endTime || '').render() + "<br>"
+
+			data += "<br><b>HD Recording settings:</b><br>";
+			data += "Enabled (0=disabled,1=enabled):";
+			data += myForm.text().attr('name', 'hdRecording').attr('value', hdRecording).render();
+
+			data += "<br><br><b>Motion detection settings:</b><br>";
+			data += "Enabled (0:disabled,1:enabled):";
+			data += myForm.text().attr('name', 'motionDetection').attr('value', motionDetection).render();
+			data += "<br>RecordingLocation (0:no recording,1:cloud recording,2:sdcard recording)";
+			data += myForm.text().attr('name', 'motionDetectionRecordingLocation').attr('value', motionDetectionRecordingLocation).render() + "<br>"
+			data += "Blocksize:";
+			data += myForm.text().attr('name', 'blockSize').attr('value', blockSize).render() + "<br>"
+
+			data += "<br><b>Ondemand detection settings:</b>";
+			data += "<br>RecordingLocation (2=cloud recording,3=sdcard recording):";
+			data += myForm.text().attr('name', 'ondemandRecordingLocation').attr('value', ondemandRecordingLocation).render() + "<br>"
+
+			data += myForm.submit().attr('value', 'Save settings').render();
+
+			res.send(data);
+		} else
+		{
+			res.send(util.format("Response:%j, body:%j", response, body));
+		}
+	});
+
+});
+
+app.post('/blocksize/camera/fire/:cameraID', function(req, res)
+{
+	var cameraID = req.params.cameraID;
+	var data = "";
+	var blockSize = req.body.blockSize;
+	var settingsURL = appEngineIP + "camera/blockSize";
+
+	var params = {
+		blockSize : blockSize
+	};
+
+	data += " Sending data :" + JSON.stringify(params) + "<br>";
+
+	request.post({
+		url : settingsURL,
+		json : params,
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		if (response && response.statusCode == 200)
+		{
+			data += "Blocksize action taken!";
+		} else
+		{
+			data += util.format("Response:%j, body:%j", response, body);
+		}
+		res.send(data);
+	});
+
+});
+
+app.get('/blocksize/camera/:cameraID', function(req, res)
 {
 	var data = "";
 
 	var Form = require('form-builder').Form;
 
 	var cameraID = req.params.cameraID;
-	
+
 	// app.post('/camera/scheduledRecording', camera.setScheduledRecording);
 
 	var myForm = Form.create({
-		action : webserverIP + "scheduledrecording/camera/fire/" + cameraID,
+		action : webserverIP + "blocksize/camera/fire/" + cameraID,
 		method : 'post'
 	});
 
 	// opens the form
 	data += myForm.open(); // will return: <form action="/signup"
 
-	data += "Day  enabled/disabled<br>"
-	// class="myform-class">
-
-	for (var i = 0; i < days.length; i++)
-	{
-		data += days[i];
-		// a group of checkboxes, the formBuilder automatically transform
-		// "checklist[]" into "checklist[INDEX]", you can use your own INDEX
-		// without problem, see example bellow
-		data += myForm.checkbox().attr({
-			name : days[i]
-		}).render(); // <input type="checkbox" value="1" name="checklist[0]"
-						// checked="checked" />
-
-		data += "<br>";
-	}
-	data += "StartTime:";
-	data += myForm.text().attr('name', 'startTime').render();
-	data += "<br>EndTime:";
-	// add the first field and renders it
-	data += myForm.text().attr('name', 'endTime').render() + "<br>"
+	data += "BlockSize:";
+	data += myForm.text().attr('name', 'blockSize').render();
 
 	data += myForm.submit().attr('value', 'Save settings').render();
 
 	res.send(data);
 });
 
-app.post('/blocksize/camera/fire/:cameraID', function(req, res)
-		{
-			var cameraID = req.params.cameraID;
-			var data = "";	
-			var blockSize = req.body.blockSize;
-			var settingsURL = appEngineIP + "camera/blockSize";
-			
-			var params = {
-				blockSize : blockSize
-			};
-			
-			data += " Sending data :" + JSON.stringify(params) + "<br>";
-			
-			request.post({
-				url : settingsURL,
-				json : params,
-				headers : {
-					token : self.userToken,
-					userid : self.userID
-				}
-			}, function(error, response, body)
-			{
-				if (response && response.statusCode == 200)
-				{
-					data += "Blocksize action taken!";
-				} else
-				{
-					data += util.format("Response:%j, body:%j", response, body);
-				}
-				res.send(data);
-			});
-
-		});
-
-app.get('/blocksize/camera/:cameraID', function(req, res)
-		{
-			var data = "";
-
-			var Form = require('form-builder').Form;
-
-			var cameraID = req.params.cameraID;
-			
-			// app.post('/camera/scheduledRecording', camera.setScheduledRecording);
-
-			var myForm = Form.create({
-				action : webserverIP + "blocksize/camera/fire/" + cameraID,
-				method : 'post'
-			});
-
-			// opens the form
-			data += myForm.open(); // will return: <form action="/signup"
-
-			data += "BlockSize:";
-			data += myForm.text().attr('name', 'blockSize').render();
-
-			data += myForm.submit().attr('value', 'Save settings').render();
-
-			res.send(data);
-		});
-
 app.post('/play/camera/fire/:cameraID', function(req, res)
-		{
-			var cameraID = req.params.cameraID;
-			var data = "";	
-			var fileName = req.body.fileName;
-			var settingsURL = appEngineIP + "camera/playfile";
-			
-			var params = {
-				fileName : fileName
-			};
-			
-			data += " Sending data :" + JSON.stringify(params) + "<br>";
-			
-			request.post({
-				url : settingsURL,
-				json : params,
-				headers : {
-					token : self.userToken,
-					userid : self.userID
-				}
-			}, function(error, response, body)
-			{
-				if (response && response.statusCode == 200)
-				{
-					data += "Playfile action taken!";
-				} else
-				{
-					data += util.format("Response:%j, body:%j", response, body);
-				}
-				res.send(data);
-			});
+{
+	var cameraID = req.params.cameraID;
+	var data = "";
+	var fileName = req.body.fileName;
+	var settingsURL = appEngineIP + "camera/playfile";
 
-		});
+	var params = {
+		fileName : fileName
+	};
+
+	data += " Sending data :" + JSON.stringify(params) + "<br>";
+
+	request.post({
+		url : settingsURL,
+		json : params,
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		if (response && response.statusCode == 200)
+		{
+			data += "Playfile action taken!";
+		} else
+		{
+			data += util.format("Response:%j, body:%j", response, body);
+		}
+		res.send(data);
+	});
+
+});
 
 app.get('/play/camera/:cameraID', function(req, res)
-		{
-			var data = "";
+{
+	var data = "";
 
-			var Form = require('form-builder').Form;
+	var Form = require('form-builder').Form;
 
-			var cameraID = req.params.cameraID;
-			
-			// app.post('/camera/scheduledRecording', camera.setScheduledRecording);
+	var cameraID = req.params.cameraID;
 
-			var myForm = Form.create({
-				action : webserverIP + "play/camera/fire/" + cameraID,
-				method : 'post'
-			});
+	// app.post('/camera/scheduledRecording', camera.setScheduledRecording);
 
-			// opens the form
-			data += myForm.open(); // will return: <form action="/signup"
+	var myForm = Form.create({
+		action : webserverIP + "play/camera/fire/" + cameraID,
+		method : 'post'
+	});
 
-			data += "File name:";
-			data += myForm.text().attr('name', 'fileName').render();
+	// opens the form
+	data += myForm.open(); // will return: <form action="/signup"
 
-			data += myForm.submit().attr('value', 'Tell camera to play this file').render();
+	data += "File name:";
+	data += myForm.text().attr('name', 'fileName').render();
 
-			res.send(data);
-		});
+	data += myForm.submit().attr('value', 'Tell camera to play this file').render();
+
+	res.send(data);
+});
 
 app.get('/motion/camera/:cameraID/:state', function(req, res)
 {
@@ -780,10 +841,11 @@ app.get('/motion/camera/:cameraID/:state', function(req, res)
 	{
 		motionDetection = "1";
 		recording = "1";
-	} else if (state === "2"){
+	} else if (state === "2")
+	{
 		motionDetection = "1";
 		recording = "2";
-	} else 
+	} else
 	{
 		motionDetection = "0";
 		recording = "0";
@@ -843,34 +905,34 @@ app.get('/hd/camera/:cameraID/:state', function(req, res)
 
 });
 
-app.get('/ondemand/camera/:cameraID/:type', function(req, res)
-		{
-			var cameraID = req.params.cameraID;
-			var type = req.params.type;
-			
-			var settingsURL = appEngineIP + "camera/ondemandRecording";
-			request.post({
-				url : settingsURL,
-				json : {
-					cameraID : cameraID,
-					state : type 
-				},
-				headers : {
-					token : self.userToken,
-					userid : self.userID
-				}
-			}, function(error, response, body)
-			{
-				if (response && response.statusCode == 200)
-				{
-					res.send("Ondemand recording action given!");
-				} else
-				{
-					res.send(util.format("Response:%j, body:%j", response, body));
-				}
-			});
+app.get('/ondemand/camera/:cameraID', function(req, res)
+{
+	var cameraID = req.params.cameraID;
+	var type = req.params.type;
 
-		});
+	var settingsURL = appEngineIP + "camera/ondemandRecording";
+	request.post({
+		url : settingsURL,
+		json : {
+			cameraID : cameraID,
+			state : 1
+		},
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		if (response && response.statusCode == 200)
+		{
+			res.send("Ondemand recording action given!");
+		} else
+		{
+			res.send(util.format("Response:%j, body:%j", response, body));
+		}
+	});
+
+});
 
 app.get('/audio/camera/:cameraID/:state', function(req, res)
 {
@@ -1933,9 +1995,7 @@ app.get('/configure/tracker/:userTrackerPairID', function(req, res)
 				data += "No existing settings...";
 			} else
 			{
-				data += "Name:" + name + "<br>Emergency contact 1:" + emergencyContact1 + "<br>emergency contact 2:" + emergencyContact2 + "<br>emergency contact 3:" + emergencyContact3
-						+ "<br>emergency contact 4:" + emergencyContact4 + "<br>emergencyContact 5:" + emergencyContact5 + "<br>callTimeout:" + callTimeout + "<br>heartbeat:" + heartbeat
-						+ "<br>callinEnabled:" + callinEnabled + "<br>";
+				data += "Name:" + name + "<br>Emergency contact 1:" + emergencyContact1 + "<br>emergency contact 2:" + emergencyContact2 + "<br>emergency contact 3:" + emergencyContact3 + "<br>emergency contact 4:" + emergencyContact4 + "<br>emergencyContact 5:" + emergencyContact5 + "<br>callTimeout:" + callTimeout + "<br>heartbeat:" + heartbeat + "<br>callinEnabled:" + callinEnabled + "<br>";
 			}
 			var Form = require('form-builder').Form;
 
@@ -2130,62 +2190,56 @@ app.get('/event/tracker/:userTrackerPairID', function(req, res)
 /**
  * get the info from the server
  */
-app
-		.get(
-				'/location/tracker/:userTrackerPairID',
-				function(req, res)
-				{
-					var userTrackerPairID = req.params.userTrackerPairID;
-					var settingsURL = appEngineIP + "tracker/location?userTrackerPairID=" + userTrackerPairID;
-					// console.log("Going to %s with %s and %s", settingsURL,
-					// self.userToken, self.userID);
-					var data = "";
-					request
-							.get(
-									{
-										url : settingsURL,
-										headers : {
-											token : self.userToken,
-											userid : self.userID
-										}
-									},
-									function(error, response, body)
-									{
-										console.log("Response status code is :%s", response && response.statusCode);
-										if (error == null && response && response.statusCode == 200)
-										{
-											var locationData = JSON.parse(response.body);
+app.get('/location/tracker/:userTrackerPairID', function(req, res)
+{
+	var userTrackerPairID = req.params.userTrackerPairID;
+	var settingsURL = appEngineIP + "tracker/location?userTrackerPairID=" + userTrackerPairID;
+	// console.log("Going to %s with %s and %s", settingsURL,
+	// self.userToken, self.userID);
+	var data = "";
+	request.get({
+		url : settingsURL,
+		headers : {
+			token : self.userToken,
+			userid : self.userID
+		}
+	}, function(error, response, body)
+	{
+		console.log("Response status code is :%s", response && response.statusCode);
+		if (error == null && response && response.statusCode == 200)
+		{
+			var locationData = JSON.parse(response.body);
 
-											console.log("%j", locationData);
+			console.log("%j", locationData);
 
-											data += "<html><body><b>Location Data:</b><br><table><tr><td><b>Lat</b></td><td><b>Long</b></td><td><b>Speed</b></td><td><b>Altitude</b></td><td><b>Gps derived location?</b></td><td><b>Battery level (%)</b></td><td><b>Timestamp</b></td></tr>";
+			data += "<html><body><b>Location Data:</b><br><table><tr><td><b>Lat</b></td><td><b>Long</b></td><td><b>Speed</b></td><td><b>Altitude</b></td><td><b>Gps derived location?</b></td><td><b>Battery level (%)</b></td><td><b>Timestamp</b></td></tr>";
 
-											for (var i = 0; i < locationData.length; i++)
-											{
-												var row = locationData[i];
-												// console.log("Processing row
-												// %s", JSON.stringify(row));
+			for (var i = 0; i < locationData.length; i++)
+			{
+				var row = locationData[i];
+				// console.log("Processing row
+				// %s", JSON.stringify(row));
 
-												data += "<tr>";
-												data += "<td>" + row.latitude + "</td>";
-												data += "<td>" + row.longditude + "</td>";
-												data += "<td>" + row.speed + "</td>";
-												data += "<td>" + row.altitude + "</td>";
-												data += "<td>" + row.gpsDerivedLocation + "</td>";
-												data += "<td>" + row.batteryLevel + "</td>";
-												data += "<td>" + row.timeStamp + "</td>";
-												data += "</tr>"
-											}
-											data += "</table>";
+				data += "<tr>";
+				data += "<td>" + row.latitude + "</td>";
+				data += "<td>" + row.longditude + "</td>";
+				data += "<td>" + row.speed + "</td>";
+				data += "<td>" + row.altitude + "</td>";
+				data += "<td>" + row.gpsDerivedLocation + "</td>";
+				data += "<td>" + row.batteryLevel + "</td>";
+				data += "<td>" + row.timeStamp + "</td>";
+				data += "</tr>"
+			}
+			data += "</table>";
 
-										} else
-										{
-											console.log(error);
-											console.log(response != undefined ? response.body : "body undefined!");
-										}
-										res.send(data);
-									});
-				});
+		} else
+		{
+			console.log(error);
+			console.log(response != undefined ? response.body : "body undefined!");
+		}
+		res.send(data);
+	});
+});
 
 app.get('/users', user.list);
 
