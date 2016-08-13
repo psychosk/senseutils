@@ -564,28 +564,27 @@ app.post('/settings/camera/fire/:cameraID', function(req, res)
 	var motionDetectionRecordingLocation = req.body.motionDetectionRecordingLocation;
 	var blockSize = req.body.blockSize;
 	var hdRecording = req.body.hdRecording;
-	
-	
+
 	var settingsURL = appEngineIP + "camera/options";
 
 	var params = {
 		cameraID : cameraID,
-		scheduledRecordingSchedule : {	
+		scheduledRecordingSchedule : {
 			daysOfTheWeek : daysOfTheWeek,
 			startTime : startTime,
 			endTime : endTime
 		},
-		motionDetection:motionDetection,
+		motionDetection : motionDetection,
 		hdRecording : hdRecording,
 		blockSize : blockSize,
 		motionDetectionRecordingLocation : motionDetectionRecordingLocation,
 		ondemandRecordingLocation : ondemandRecordingLocation
 	};
 
-	console.log("Sending:%j",params);
-	
-//	data += " Sending data :" + JSON.stringify(params) + "<br>";
-//
+	console.log("Sending:%j", params);
+
+	// data += " Sending data :" + JSON.stringify(params) + "<br>";
+	//
 	request.post({
 		url : settingsURL,
 		json : params,
@@ -647,6 +646,21 @@ app.get('/settings/camera/:cameraID', function(req, res)
 
 			// opens the form
 			data += myForm.open(); // will return: <form action="/signup"
+
+			if (!scheduledRecordingSchedule)
+			{
+				scheduledRecordingSchedule = {
+					daysOfTheWeek : {
+						monday : 0,
+						tuesday : 0,
+						wednesday : 0,
+						thursday : 0,
+						friday : 0,
+						saturday : 0,
+						sunday : 0
+					}
+				}
+			}
 
 			data += "<b>Scheduled recording settings:</b><br>";
 			data += "Day  enabled/disabled<br>"
