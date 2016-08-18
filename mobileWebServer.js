@@ -788,7 +788,10 @@ app.post('/play/camera/fire/:cameraID', function(req, res)
 	var fileName = req.body.fileName;
 	var settingsURL = appEngineIP + "camera/playfile";
 
+	data += " CameraID:" + cameraID + ",fileName:" + fileName + "<br>";
+	
 	var params = {
+		cameraID : cameraID,
 		fileName : fileName
 	};
 
@@ -1392,7 +1395,7 @@ app.get('/listsdcardfiles/camera/:cameraID', function(req, res)
 {
 	var cameraID = req.params.cameraID;
 
-	console.log("Asking cameraID:%s to unlink", cameraID);
+	console.log("Asking cameraID:%s to listsdcardfiles", cameraID);
 	var url = appEngineIP + "camera/recordings?cameraID=" + cameraID;
 
 	request.get({
