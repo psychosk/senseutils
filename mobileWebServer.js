@@ -695,8 +695,8 @@ app.get('/settings/camera/:cameraID', function(req, res)
 			data += "Enabled (0=disabled,1=enabled):";
 			data += myForm.text().attr('name', 'hdRecording').attr('value', hdRecording).render();
 
-			data += "<br><b>Cloud recording:</b><br>";
-			data += "Enabled (0=Store to SD card,1=Store to cloud):";
+			data += "<br><b>Recording location:</b><br>";
+			data += "Enabled (0=Store to SD card,1=Store to cloud,2=No recording):";
 			data += myForm.text().attr('name', 'cloudRecording').attr('value', cloudRecording).render();
 			
 			data += "<br><br><b>Motion detection settings:</b><br>";
@@ -714,66 +714,6 @@ app.get('/settings/camera/:cameraID', function(req, res)
 		}
 	});
 
-});
-
-app.post('/blocksize/camera/fire/:cameraID', function(req, res)
-{
-	var cameraID = req.params.cameraID;
-	var data = "";
-	var blockSize = req.body.blockSize;
-	var settingsURL = appEngineIP + "camera/blockSize";
-
-	var params = {
-		blockSize : blockSize
-	};
-
-	data += " Sending data :" + JSON.stringify(params) + "<br>";
-
-	request.post({
-		url : settingsURL,
-		json : params,
-		headers : {
-			token : self.userToken,
-			userid : self.userID
-		}
-	}, function(error, response, body)
-	{
-		if (response && response.statusCode == 200)
-		{
-			data += "Blocksize action taken!";
-		} else
-		{
-			data += util.format("Response:%j, body:%j", response, body);
-		}
-		res.send(data);
-	});
-
-});
-
-app.get('/blocksize/camera/:cameraID', function(req, res)
-{
-	var data = "";
-
-	var Form = require('form-builder').Form;
-
-	var cameraID = req.params.cameraID;
-
-	// app.post('/camera/scheduledRecording', camera.setScheduledRecording);
-
-	var myForm = Form.create({
-		action : webserverIP + "blocksize/camera/fire/" + cameraID,
-		method : 'post'
-	});
-
-	// opens the form
-	data += myForm.open(); // will return: <form action="/signup"
-
-	data += "BlockSize:";
-	data += myForm.text().attr('name', 'blockSize').render();
-
-	data += myForm.submit().attr('value', 'Save settings').render();
-
-	res.send(data);
 });
 
 app.post('/play/camera/fire/:cameraID', function(req, res)
@@ -837,84 +777,6 @@ app.get('/play/camera/:cameraID', function(req, res)
 	data += myForm.submit().attr('value', 'Tell camera to play this file').render();
 
 	res.send(data);
-});
-
-app.get('/motion/camera/:cameraID/:state', function(req, res)
-{
-	var cameraID = req.params.cameraID;
-	var state = req.params.state;
-
-	var motionDetection, recording;
-	if (state === "0")
-	{
-		motionDetection = "1";
-		recording = "0";
-	} else if (state === "1")
-	{
-		motionDetection = "1";
-		recording = "1";
-	} else if (state === "2")
-	{
-		motionDetection = "1";
-		recording = "2";
-	} else
-	{
-		motionDetection = "0";
-		recording = "0";
-	}
-
-	var settingsURL = appEngineIP + "camera/setMotionDetection";
-	request.post({
-		url : settingsURL,
-		json : {
-			cameraID : cameraID,
-			motionDetection : motionDetection,
-			recording : recording
-		},
-		headers : {
-			token : self.userToken,
-			userid : self.userID
-		}
-	}, function(error, response, body)
-	{
-		if (response && response.statusCode == 200)
-		{
-			res.send("Motion detection action taken!");
-		} else
-		{
-			res.send(util.format("Response:%j, body:%j", response, body));
-		}
-	});
-
-});
-
-app.get('/hd/camera/:cameraID/:state', function(req, res)
-{
-	var cameraID = req.params.cameraID;
-	var state = req.params.state;
-
-	var settingsURL = appEngineIP + "camera/hdRecording";
-	request.post({
-		url : settingsURL,
-		json : {
-			cameraID : cameraID,
-			state : state
-		},
-		headers : {
-			token : self.userToken,
-			userid : self.userID
-		}
-	}, function(error, response, body)
-	{
-		if (response && response.statusCode == 200)
-		{
-			res.send("HD quality action taken!");
-		} else
-		{
-			res.send(util.format("Response:%j, body:%j", response, body));
-		}
-	});
-
 });
 
 app.get('/ondemand/camera/:cameraID', function(req, res)
