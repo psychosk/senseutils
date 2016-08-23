@@ -560,7 +560,7 @@ app.post('/settings/camera/fire/:cameraID', function(req, res)
 	var startTime = req.body.startTime, endTime = req.body.endTime;
 
 	var motionDetection = req.body.motionDetection;
-	var cloudRecording = req.body.ondemandRecordingLocation;
+	var cloudRecording = req.body.cloudRecording;
 	var blockSize = req.body.blockSize;
 	var hdRecording = req.body.hdRecording;
 
