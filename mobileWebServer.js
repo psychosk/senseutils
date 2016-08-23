@@ -560,8 +560,7 @@ app.post('/settings/camera/fire/:cameraID', function(req, res)
 	var startTime = req.body.startTime, endTime = req.body.endTime;
 
 	var motionDetection = req.body.motionDetection;
-	var ondemandRecordingLocation = req.body.ondemandRecordingLocation;
-	var motionDetectionRecordingLocation = req.body.motionDetectionRecordingLocation;
+	var cloudRecording = req.body.ondemandRecordingLocation;
 	var blockSize = req.body.blockSize;
 	var hdRecording = req.body.hdRecording;
 
@@ -577,8 +576,7 @@ app.post('/settings/camera/fire/:cameraID', function(req, res)
 		motionDetection : motionDetection,
 		hdRecording : hdRecording,
 		blockSize : blockSize,
-		motionDetectionRecordingLocation : motionDetectionRecordingLocation,
-		ondemandRecordingLocation : ondemandRecordingLocation
+		cloudRecording : cloudRecording
 	};
 
 	console.log("Sending:%j", params);
@@ -627,8 +625,7 @@ app.get('/settings/camera/:cameraID', function(req, res)
 
 			var motionDetection = body.motionDetection;
 			var scheduledRecordingSchedule = body.scheduledRecordingSchedule;
-			var ondemandRecordingLocation = body.ondemandRecordingLocation;
-			var motionDetectionRecordingLocation = body.motionDetectionRecordingLocation;
+			var cloudRecording = body.cloudRecording;
 			var blockSize = body.blockSize;
 			var hdRecording = body.hdRecording;
 
@@ -663,7 +660,7 @@ app.get('/settings/camera/:cameraID', function(req, res)
 			}
 
 			data += "<b>Scheduled recording settings:</b><br>";
-			data += "Day  enabled/disabled<br>"
+			data += "Day enabled/disabled<br>"
 			// class="myform-class">
 
 			for (var i = 0; i < days.length; i++)
@@ -698,17 +695,15 @@ app.get('/settings/camera/:cameraID', function(req, res)
 			data += "Enabled (0=disabled,1=enabled):";
 			data += myForm.text().attr('name', 'hdRecording').attr('value', hdRecording).render();
 
+			data += "<br><b>Cloud recording:</b><br>";
+			data += "Enabled (0=Store to SD card,1=Store to cloud):";
+			data += myForm.text().attr('name', 'cloudRecording').attr('value', cloudRecording).render();
+			
 			data += "<br><br><b>Motion detection settings:</b><br>";
 			data += "Enabled (0:disabled,1:enabled):";
 			data += myForm.text().attr('name', 'motionDetection').attr('value', motionDetection).render();
-			data += "<br>RecordingLocation (0:no recording,1:cloud recording,2:sdcard recording)";
-			data += myForm.text().attr('name', 'motionDetectionRecordingLocation').attr('value', motionDetectionRecordingLocation).render() + "<br>"
 			data += "Blocksize:";
 			data += myForm.text().attr('name', 'blockSize').attr('value', blockSize).render() + "<br>"
-
-			data += "<br><b>Ondemand detection settings:</b>";
-			data += "<br>RecordingLocation (2=cloud recording,3=sdcard recording):";
-			data += myForm.text().attr('name', 'ondemandRecordingLocation').attr('value', ondemandRecordingLocation).render() + "<br>"
 
 			data += myForm.submit().attr('value', 'Save settings').render();
 
