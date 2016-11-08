@@ -666,11 +666,6 @@ app.get('/settings/camera/:cameraID', function(req, res)
 			for (var i = 0; i < days.length; i++)
 			{
 				data += days[i];
-				// a group of checkboxes, the formBuilder automatically
-				// transform
-				// "checklist[]" into "checklist[INDEX]", you can use your own
-				// INDEX
-				// without problem, see example bellow
 				if (scheduledRecordingSchedule.daysOfTheWeek[days[i]] == 1)
 				{
 					data += myForm.checkbox().attr({

@@ -4,17 +4,13 @@ var request = require('request');
 var prompt = require('prompt');
 
 var args = process.argv.slice(2);// remove command and filename
-var IMEI = args[0];
-var phoneNumber = args[1];
-var email = args[2];
-var password = args[3];
-var operator = args[4];
-var trackerName = args[5];
+var userTrackerPairID = args[0];
+var email = args[1];
+var password = args[2];
 
-
-if (IMEI == null || phoneNumber == null || email == null || password == null || operator == null || trackerName == null)
+if (userTrackerPairID == null || email == null || password == null)
 {
-	console.log("args:IMEI phoneNumber email password operator(airtel,idea) trackerName");
+	console.log("args:userTrackerPairID email password");
 	process.exit(1);
 }
 
@@ -48,9 +44,9 @@ if (process.env.NODE_ENV === 'dev')
 	}
 }
 
-var initURL = "http" + HTTPS_PREFIX + "://" + trackerEngineIP + "tracker/register";
-var registerURL = "http" + HTTPS_PREFIX + "://" + appEngineIP + "tracker/register/user";
-var loginURL = "http" + HTTPS_PREFIX + "://" + trackerEngineIP + "tracker/login";
+//var initURL = "http" + HTTPS_PREFIX + "://" + trackerEngineIP + "tracker/register";
+//var registerURL = "http" + HTTPS_PREFIX + "://" + appEngineIP + "tracker/register/user";
+//var loginURL = "http" + HTTPS_PREFIX + "://" + trackerEngineIP + "tracker/login";
 var dataURL = "http" + HTTPS_PREFIX + "://" + trackerEngineIP + "tracker/data";
 var userLoginURL = "http" + HTTPS_PREFIX + "://" + appEngineIP + "user/login";
 var self = this;
@@ -66,77 +62,15 @@ request.post({
 	agentOptions : agentOptions
 }, function(error, response, body)
 {
-	if (!error && response.statusCode == 200)
-	{
-		var params = response.body;
-		self.userToken = params.token;
-		self.userID = params.id;
-		console.log("User login accepted.")
-		console.log("Initialization accepted, TRACKER REGISTRATION with userID:%s on URL:%s with token:%s", self.userID, registerURL, self.userToken);
-		request.post({
-			url : registerURL,
-			json : {
-				phoneNumber : phoneNumber,
-				imei : IMEI,
-				operator : operator,
-				trackerName : trackerName
-			},
-			headers : {
-				userid : self.userID,
-				token : self.userToken
-			},
-			agentOptions : agentOptions
-		}, function(error, response, body)
-		{
-			console.log("RESPONSE IS %j",response);
-			if (!error && response.statusCode == 200)
-			{
-				var userTrackerPairID = body.userTrackerPairID;
-				console.log("Registration accepted");
-				console.log("Please type in the TID you get via SMS on the phone number:%s", phoneNumber);
-				prompt.start();
-
-				prompt.get([ 'TID' ], function(err, result)
-				{
-
-					request.post({
-						url : loginURL,
-						json : {
-							TID : result.TID
-						},
-						agentOptions : agentOptions
-					}, function(error, response, body)
-					{
-						if (!error && response.statusCode == 200)
-						{
-							// var responseParams =
-							// JSON.parse(response.body);
-							console.log("Login successful!");
-							startPrompt(result.TID);
-						} else
-						{
-							console.log("Login didn't work");
-							console.log("ERROR:%s", error);
-							console.log("STATUSCODE:%s", response && response.statusCode);
-							console.log("BODY:%s", response.body && response.body);
-						}
-					});
-				});
-			} else
-			{
-				console.log("Registration didn't work");
-				console.log("ERROR:%s", error);
-				console.log("STATUSCODE:%s", response && response.statusCode);
-				console.log("BODY:%s", response.body && response.body);
-			}
-		});
-	} else
-	{
-		console.log("Registration didn't work");
-		console.log("ERROR:%s", error);
-		console.log("STATUSCODE:%s", response && response.statusCode);
-		console.log("BODY:%s", response.body && response.body);
-	}
+	if (!error && response.statusCode == 200) {
+        var params = response.body;
+        self.userToken = params.token;
+        self.userID = params.id;
+        console.log("User login accepted.")
+        startPrompt(userTrackerPairID);
+    } else {
+        console.log("Could not login!");
+    }
 });
 
 function getDate()
